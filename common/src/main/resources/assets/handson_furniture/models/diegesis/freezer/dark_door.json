@@ -1,0 +1,7 @@
+{
+  "parent": "handson_furniture:diegesis/freezer/door",
+  "textures": {
+    "particle": "refurbished_furniture:block/dark_particle",
+    "texture": "refurbished_furniture:block/dark_fridge"
+  }
+}

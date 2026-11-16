@@ -1,0 +1,7 @@
+{
+  "parent": "handson_furniture:diegesis/kitchen_cabinet/body_right",
+  "textures": {
+    "particle": "refurbished_furniture:block/purple_particle",
+    "texture": "refurbished_furniture:block/purple_kitchen_storage_cabinet"
+  }
+}

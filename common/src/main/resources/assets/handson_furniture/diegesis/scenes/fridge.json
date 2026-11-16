@@ -1,0 +1,191 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Pocky-l/diegesis/main/docs/schema/scene.schema.json",
+  "$comment": "Refurbished's fridge, front to -z here (its facing names its back: the station turns the scene the other way). The block is swapped for body (the fridge hollowed out, with two shelves) and door, both Refurbished's own boxes and textures turned round; the door is hinged on the viewer's right at the corner where its back meets the fridge's front (x 0, z 3), so it stays against the fridge as it swings about 100 degrees open. A click on the door opens or shuts it (the station keeps it so). Items stand anywhere on the floor and shelves inside (surfaces 0-2) and in the door's three bins (3-5, written where the shut door has them; code turns them with the door). The camera faces the fridge from the front, a little to the left where the open door leaves the view free, and looks at its middle.",
+  "work_plane": 8,
+  "idle_visible": true,
+  "camera": {
+    "position": [
+      14,
+      13,
+      -38
+    ],
+    "target": [
+      8,
+      8,
+      4
+    ],
+    "fov": 34,
+    "interactive_at": 0.6
+  },
+  "interface": {
+    "hide_player": true,
+    "inventory_panel": false,
+    "highlight_color": "#26FFFFFF",
+    "counts_on_top": true
+  },
+  "inventory_drawer": {
+    "layout": "hotbar",
+    "always_open": true,
+    "carry_size": 3.2
+  },
+  "placing": {
+    "group": "items",
+    "item_size": 2.0,
+    "scale_range": [
+      0.5,
+      1.6
+    ],
+    "counts": "hover",
+    "physics": {},
+    "light_color": "#00FFC888",
+    "surfaces": [
+      {
+        "from": [
+          1,
+          3
+        ],
+        "to": [
+          15,
+          15
+        ],
+        "height": 1,
+        "clearance": 4,
+        "aim_height": 3,
+        "wall": 15,
+        "open": [
+          "front"
+        ]
+      },
+      {
+        "from": [
+          1,
+          6
+        ],
+        "to": [
+          15,
+          15
+        ],
+        "height": 6,
+        "clearance": 4,
+        "aim_height": 3,
+        "wall": 15,
+        "open": [
+          "front"
+        ]
+      },
+      {
+        "from": [
+          1,
+          6
+        ],
+        "to": [
+          15,
+          15
+        ],
+        "height": 11,
+        "clearance": 4,
+        "aim_height": 3,
+        "wall": 15,
+        "open": [
+          "front"
+        ]
+      },
+      {
+        "from": [
+          1,
+          3
+        ],
+        "to": [
+          15,
+          5
+        ],
+        "height": 2,
+        "clearance": 4,
+        "aim_height": 2
+      },
+      {
+        "from": [
+          1,
+          3
+        ],
+        "to": [
+          15,
+          5
+        ],
+        "height": 7,
+        "clearance": 4,
+        "aim_height": 2
+      },
+      {
+        "from": [
+          1,
+          3
+        ],
+        "to": [
+          15,
+          5
+        ],
+        "height": 12,
+        "clearance": 4,
+        "aim_height": 2
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "pos": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "pickable": false,
+      "hidden": true,
+      "visual": {
+        "model": "handson_furniture:diegesis/fridge/light_body",
+        "lit_as_block": true
+      }
+    },
+    {
+      "id": "door",
+      "pos": [
+        0,
+        0,
+        3
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "pickable": true,
+      "collider": {
+        "from": [
+          -16,
+          0,
+          0
+        ],
+        "to": [
+          0,
+          16,
+          4
+        ]
+      },
+      "hidden": true,
+      "visual": {
+        "model": "handson_furniture:diegesis/fridge/light_door",
+        "lit_as_block": true,
+        "anchor": [
+          16,
+          0,
+          13
+        ]
+      }
+    }
+  ]
+}

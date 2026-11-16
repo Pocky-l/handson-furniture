@@ -1,0 +1,171 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Pocky-l/diegesis/main/docs/schema/scene.schema.json",
+  "$comment": "Refurbished's kitchen storage cabinet, front to -z here (its facing names its back). The block is swapped for body (hollowed out, one shelf; its sides painted for the hinge it has) and one door leaf, Refurbished's own boxes and textures turned round. door_left is hinged at the viewer's left where its back meets the cabinet's front (x 16, z 4), door_right at the right (x 0, z 4), so the door stays against the cabinet as it swings; code shows the one the block's hinge names and swings it open. A click on the door opens or shuts it. Items stand anywhere on the floor and the shelf. The camera stands at the front right and looks in past the open left-hinged door; code mirrors it across x 8 for a right-hinged one.",
+  "work_plane": 8,
+  "idle_visible": true,
+  "camera": {
+    "position": [
+      -7,
+      12,
+      -24
+    ],
+    "target": [
+      9.5,
+      7,
+      8
+    ],
+    "fov": 34,
+    "interactive_at": 0.6
+  },
+  "interface": {
+    "hide_player": true,
+    "inventory_panel": false,
+    "highlight_color": "#26FFFFFF",
+    "counts_on_top": true
+  },
+  "inventory_drawer": {
+    "layout": "hotbar",
+    "always_open": true,
+    "carry_size": 3.2
+  },
+  "placing": {
+    "group": "items",
+    "item_size": 4.0,
+    "scale_range": [
+      0.5,
+      1.6
+    ],
+    "counts": "hover",
+    "physics": {},
+    "light_color": "#00FFC888",
+    "surfaces": [
+      {
+        "from": [
+          1,
+          4
+        ],
+        "to": [
+          15,
+          15
+        ],
+        "height": 1,
+        "clearance": 6,
+        "aim_height": 4,
+        "wall": 15,
+        "open": [
+          "front"
+        ]
+      },
+      {
+        "from": [
+          1,
+          4
+        ],
+        "to": [
+          15,
+          15
+        ],
+        "height": 8,
+        "clearance": 7,
+        "aim_height": 4,
+        "wall": 15,
+        "open": [
+          "front"
+        ]
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "pos": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "pickable": false,
+      "hidden": true,
+      "visual": {
+        "model": "handson_furniture:diegesis/kitchen_cabinet/oak_body_left",
+        "lit_as_block": true
+      }
+    },
+    {
+      "id": "door_left",
+      "pos": [
+        16,
+        0,
+        4
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "pickable": true,
+      "collider": {
+        "from": [
+          0,
+          0,
+          0
+        ],
+        "to": [
+          16,
+          16,
+          2
+        ]
+      },
+      "hidden": true,
+      "visual": {
+        "model": "handson_furniture:diegesis/kitchen_cabinet/oak_door_left",
+        "lit_as_block": true,
+        "anchor": [
+          0,
+          0,
+          12
+        ]
+      }
+    },
+    {
+      "id": "door_right",
+      "pos": [
+        0,
+        0,
+        4
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "pickable": true,
+      "collider": {
+        "from": [
+          -16,
+          0,
+          0
+        ],
+        "to": [
+          0,
+          16,
+          2
+        ]
+      },
+      "hidden": true,
+      "visual": {
+        "model": "handson_furniture:diegesis/kitchen_cabinet/oak_door_right",
+        "lit_as_block": true,
+        "anchor": [
+          16,
+          0,
+          12
+        ]
+      }
+    }
+  ]
+}

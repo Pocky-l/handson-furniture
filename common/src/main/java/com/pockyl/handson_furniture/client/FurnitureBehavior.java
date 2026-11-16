@@ -1,0 +1,364 @@
+package com.pockyl.handson_furniture.client;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
+
+import com.pockyl.diegesis.api.client.NodeView;
+import com.pockyl.diegesis.api.client.StationBehavior;
+import com.pockyl.diegesis.api.client.StationView;
+import com.pockyl.diegesis.api.event.SceneEvent;
+import com.pockyl.diegesis.api.scene.Visual;
+import com.pockyl.diegesis.api.state.SlotRef;
+import com.pockyl.handson_furniture.Furniture;
+import com.pockyl.handson_furniture.HandsOnFurniture;
+import com.pockyl.handson_furniture.station.StorageLogic;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ * A piece of furniture opened by hand. While the player works at it the block is swapped for the scene's copy, made of the
+ * furniture's own textures: a hollow body with real shelves, and the parts that move, a door swinging open or a drawer sliding
+ * out as the player comes, and back as they leave. The copy stands in for the block until the part is shut again.
+ */
+final class FurnitureBehavior implements StationBehavior {
+    /**
+     * How a piece's door or drawer moves, as a hand moves it: a door held by its seal or latch first gives a little
+     * ({@code crack}, the share of the way, over the first {@code crackTime} of the opening), then swings and comes to rest a
+     * touch past open ({@code overshoot}, as {@code easeOutBack}'s strength) as it meets its stop; shutting, it gathers speed and
+     * bounces back off the frame by {@code bounce} of the way before it settles.
+     */
+    record Motion(float openSeconds, float closeSeconds, float crack, float crackTime, float overshoot, float bounce) {
+        /** The share of the shutting spent before the part meets the frame; the rest is its bounce. */
+        private static final float MEETS = 0.8F;
+
+        /** Where the part is, 0 to 1 of the way it is going, at {@code u} (0 to 1) of the time; {@code fromRest}: it started still. */
+        float opening(float u, boolean fromRest) {
+            if (!fromRest || crack <= 0.0F) {
+                return easeOutBack(u, overshoot);
+            }
+            if (u < crackTime) {
+                return crack * smooth(u / crackTime);
+            }
+            return crack + (1.0F - crack) * easeOutBack((u - crackTime) / (1.0F - crackTime), overshoot);
+        }
+
+        float shutting(float u) {
+            if (u < MEETS) {
+                float w = u / MEETS;
+                // Pushed: it moves off at once and gathers speed, fastest as it meets the frame.
+                return w * (0.35F + 0.65F * w);
+            }
+            return 1.0F - bounce * Mth.sin((u - MEETS) / (1.0F - MEETS) * Mth.PI);
+        }
+
+        private static float smooth(float t) {
+            return t * t * (3.0F - 2.0F * t);
+        }
+
+        private static float easeOutBack(float t, float strength) {
+            float back = t - 1.0F;
+            return 1.0F + (strength + 1.0F) * back * back * back + strength * back * back;
+        }
+    }
+
+    /**
+     * A part that moves: the scene node, the model of each variant ({@code <variant>_<model>}), and how far it goes when open,
+     * degrees about its hinge for a door, pixels along z for a drawer. With {@code hinge} it shows only on blocks whose
+     * {@code hinge} property has that value. {@code surfaces} are the places of the scene's {@code placing} that are on the
+     * part: what stands there goes along. They are written where the part stands open, or with {@code writtenShut} where it is
+     * shut (a door that stops part way open turns its shelves askew, and a surface is written square). {@code pivot} is the
+     * hinge in station pixels. {@code control} opens it ({@link Furniture#OPEN} unless the piece has more than one); {@code follow}
+     * is how far the camera goes along while it is open, station pixels.
+     */
+    record Part(String node, String model, float open, boolean slides, String hinge, int[] surfaces, Vector3f pivot, boolean writtenShut,
+            String control, Vector3f follow) {
+        /** A door whose shelves the scene writes where the shut door has them. */
+        static Part door(String node, String model, float degrees, Vector3f pivot, int... surfaces) {
+            return new Part(node, model, degrees, false, null, surfaces, pivot, true, Furniture.OPEN, new Vector3f());
+        }
+
+        static Part hinged(String node, String model, float degrees, String hinge) {
+            return new Part(node, model, degrees, false, hinge, new int[0], new Vector3f(), true, Furniture.OPEN, new Vector3f());
+        }
+
+        /** A drawer; the camera goes along with it by {@code follow}. */
+        static Part drawer(String node, String model, float pixels, String control, Vector3f follow, int... surfaces) {
+            return new Part(node, model, pixels, true, null, surfaces, new Vector3f(), false, control, follow);
+        }
+
+        /** How what stands on the part moves from where the scene writes it to where the part is now. */
+        Matrix4f move(float eased) {
+            float left = writtenShut ? open * eased : open * (eased - 1.0F);
+            if (slides) {
+                return new Matrix4f().translation(0.0F, 0.0F, left);
+            }
+            return new Matrix4f().translation(pivot).rotateY((float) Math.toRadians(left)).translate(-pivot.x(), -pivot.y(), -pivot.z());
+        }
+    }
+
+    /** The middle of the block across, scene pixels: the plane the camera is mirrored across. */
+    private static final float MIDDLE = 8.0F;
+
+    /**
+     * Where one door or drawer is, 0 shut to 1 open (a touch past it at the stop), whether it is opening, and its current move:
+     * from where, seconds into it, how long it takes, and whether it started from rest.
+     */
+    private static final class Swing {
+        private float open;
+        private boolean opening;
+        private float from;
+        private float elapsed;
+        private float duration;
+        private boolean fromRest;
+        private boolean moving;
+
+        /** Stands where the state has it, without moving there: found so (left open by someone, or while this player was away). */
+        void settle(boolean isOpen) {
+            opening = isOpen;
+            open = isOpen ? 1.0F : 0.0F;
+            moving = false;
+        }
+
+        /** Starts the move towards open or shut from wherever it is; turning round midway takes the rest of the way only. */
+        void start(boolean toOpen, Motion motion) {
+            opening = toOpen;
+            from = open;
+            float way = toOpen ? 1.0F - from : from;
+            fromRest = !moving && from <= 0.0F;
+            elapsed = 0.0F;
+            duration = Math.max(0.05F, (toOpen ? motion.openSeconds() : motion.closeSeconds()) * Mth.clamp(way, 0.35F, 1.0F));
+            moving = true;
+        }
+
+        void advance(float dt, Motion motion) {
+            if (!moving) {
+                return;
+            }
+            elapsed += dt;
+            float u = Math.min(1.0F, elapsed / duration);
+            open = opening ? from + (1.0F - from) * motion.opening(u, fromRest) : from * (1.0F - motion.shutting(u));
+            if (u >= 1.0F) {
+                moving = false;
+                open = opening ? 1.0F : 0.0F;
+            }
+        }
+
+        /** Its inside is seen: it is open, or on its way. */
+        boolean showsInside() {
+            return open > 0.0F || moving;
+        }
+
+        float eased() {
+            return Math.max(0.0F, open);
+        }
+    }
+
+    private final Furniture furniture;
+    private final List<Part> parts;
+    private final Motion motion;
+    /** Per control, how its door or drawer moves (a cabinet's two hinged doors are one: only one of them shows). */
+    private final Map<String, Swing> swings = new LinkedHashMap<>();
+    /** The control whose door or drawer the camera goes with: the one opened last. */
+    private String followed;
+    private String variant;
+    private BlockState shownFor;
+
+    FurnitureBehavior(Furniture furniture, List<Part> parts, Motion motion) {
+        this.furniture = furniture;
+        this.parts = parts;
+        this.motion = motion;
+        for (Part part : parts) {
+            swings.computeIfAbsent(part.control(), control -> new Swing());
+        }
+        followed = parts.get(0).control();
+    }
+
+    @Override
+    public void onSceneReady(StationView view) {
+        dress(view);
+        for (Map.Entry<String, Swing> entry : swings.entrySet()) {
+            boolean open = isOpen(view, entry.getKey());
+            entry.getValue().settle(open);
+            if (open) {
+                followed = entry.getKey();
+            }
+        }
+    }
+
+    /** Whether a door is open (a drawer out), as the station's state keeps it for everyone. */
+    private static boolean isOpen(StationView view, String control) {
+        return view.state().getControl(control) > 0.5F;
+    }
+
+    /** A click on a door or a drawer opens it, or shuts it. */
+    @Override
+    public void onEvent(StationView view, SceneEvent event) {
+        if (!(event instanceof SceneEvent.Click click) || click.button() != 0) {
+            return;
+        }
+        for (Part part : parts) {
+            if (part.node().equals(click.node())) {
+                CompoundTag data = new CompoundTag();
+                data.putString(StorageLogic.CONTROL, part.control());
+                view.sendAction(StorageLogic.DOOR, data);
+                return;
+            }
+        }
+    }
+
+    /** The scene stands in for the block while a door is open, or still on the way back: a door left open stays open. */
+    @Override
+    public boolean holdsBlock(StationView view) {
+        if (view.isInUse()) {
+            return false;
+        }
+        for (Map.Entry<String, Swing> entry : swings.entrySet()) {
+            if (entry.getValue().showsInside() || isOpen(view, entry.getKey())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * A shift-click in the inventory puts the stack in, merged with what is there, as the furniture's own menu would. A stack
+     * that joins none goes in only where there is room for it on the shelves; with none left, nothing happens, as in a full menu.
+     */
+    @Override
+    public boolean onInventoryShiftClick(StationView view, int slot, ItemStack stack) {
+        if (!joinsAStack(view, stack) && !view.hasRoomFor(stack)) {
+            return true;
+        }
+        CompoundTag data = new CompoundTag();
+        data.putInt(StorageLogic.SLOT, slot);
+        view.sendAction(StorageLogic.STORE, data);
+        return true;
+    }
+
+    /** Whether a stack of the same item inside has room left for some of {@code stack}. */
+    private static boolean joinsAStack(StationView view, ItemStack stack) {
+        int size = view.state().schema().slotGroups().get(Furniture.ITEMS).size();
+        for (int i = 0; i < size; i++) {
+            ItemStack there = view.state().getItem(SlotRef.of(Furniture.ITEMS, i));
+            if (!there.isEmpty() && there.getCount() < there.getMaxStackSize() && ItemStack.isSameItemSameTags(there, stack)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void frame(StationView view, float dt) {
+        BlockState state = view.level().getBlockState(view.pos());
+        if (state != shownFor) {
+            dress(view);
+        }
+        boolean anyInside = false;
+        for (Map.Entry<String, Swing> entry : swings.entrySet()) {
+            Swing swing = entry.getValue();
+            boolean wanted = isOpen(view, entry.getKey());
+            if (wanted != swing.opening) {
+                swing.start(wanted, motion);
+                if (wanted) {
+                    followed = entry.getKey();
+                }
+            }
+            swing.advance(dt, motion);
+            anyInside |= swing.showsInside();
+        }
+        boolean shown = view.isBlockHidden() && variant != null;
+        view.node("body").ifPresent(node -> node.setVisible(shown));
+        // What stands inside is seen, and can be reached, only while a door is open or on its way; each drawer's own only
+        // while that drawer is.
+        view.setPlacingVisible(shown && anyInside);
+        Vector3f camera = new Vector3f();
+        for (Part part : parts) {
+            Swing swing = swings.get(part.control());
+            float eased = swing.eased();
+            boolean fits = fits(state, part);
+            view.node(part.node()).ifPresent(node -> {
+                node.setVisible(shown && fits);
+                if (part.slides()) {
+                    node.moveTo(0.0F, 0.0F, part.open() * eased, 0.0F);
+                } else {
+                    node.rotateTo(0.0F, part.open() * eased, 0.0F, 0.0F);
+                }
+            });
+            if (part.surfaces().length > 0) {
+                Matrix4f move = part.move(eased);
+                for (int surface : part.surfaces()) {
+                    view.setSurfaceTransform(surface, move);
+                    view.setSurfaceVisible(surface, swing.showsInside());
+                }
+            }
+            if (fits && part.control().equals(followed)) {
+                camera.set(part.follow()).mul(eased);
+            }
+        }
+        // The camera goes along with the drawer pulled out, to look into it.
+        view.moveCamera(camera.x, camera.y, camera.z);
+    }
+
+    /** Gives the body and the moving parts the models of the block's variant (its wood, colour or finish). */
+    private void dress(StationView view) {
+        BlockState state = view.level().getBlockState(view.pos());
+        shownFor = state;
+        Optional<String> found = furniture.variantOf(state.getBlock());
+        variant = found.orElse(null);
+        if (variant == null) {
+            return;
+        }
+        // A body whose door hangs on either side has its sides painted to match: one model per hinge.
+        String hinge = hinge(state);
+        // The scene's camera looks in past a door hung on the left; a door on the right has it from the other side.
+        view.mirrorCamera("right".equals(hinge) ? MIDDLE : Float.NaN);
+        String body = variant + "_body" + (hinge != null ? "_" + hinge : "");
+        view.node("body").ifPresent(node -> node.setVisual(model(body, node)));
+        for (Part part : parts) {
+            view.node(part.node()).ifPresent(node -> node.setVisual(model(variant + "_" + part.model(), node)));
+        }
+    }
+
+    private static boolean fits(BlockState state, Part part) {
+        if (part.hinge() == null) {
+            return true;
+        }
+        String hinge = hinge(state);
+        return part.hinge().equals(hinge != null ? hinge : "left");
+    }
+
+    /** The side a door hangs on ({@code left} or {@code right}), for blocks that have it; null otherwise. */
+    private static String hinge(BlockState state) {
+        for (Property<?> property : state.getProperties()) {
+            if ("hinge".equals(property.getName())) {
+                return valueName(state, property);
+            }
+        }
+        return null;
+    }
+
+    private static <T extends Comparable<T>> String valueName(BlockState state, Property<T> property) {
+        return property.getName(state.getValue(property));
+    }
+
+    /**
+     * The scene's copy of a part in the variant's model, standing on the node as the scene has it (a door on its hinge), lit as
+     * the world lights the block so that the two look the same as they swap.
+     */
+    private Visual model(String name, NodeView node) {
+        ResourceLocation id = HandsOnFurniture.id("diegesis/" + furniture.stationName() + "/" + name);
+        Vector3fc anchor = node.definition().visual().map(Visual::anchor).orElse(Visual.DEFAULT_ANCHOR);
+        return new Visual(Optional.of(id), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), anchor,
+                Visual.WHITE, false, false, false, 0.0F, true);
+    }
+}

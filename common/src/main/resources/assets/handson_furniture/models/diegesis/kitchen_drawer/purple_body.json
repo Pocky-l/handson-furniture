@@ -1,0 +1,7 @@
+{
+  "parent": "handson_furniture:diegesis/kitchen_drawer/body",
+  "textures": {
+    "particle": "refurbished_furniture:block/purple_particle",
+    "texture": "refurbished_furniture:block/purple_kitchen_drawer"
+  }
+}

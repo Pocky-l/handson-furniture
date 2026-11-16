@@ -1,0 +1,44 @@
+{
+  "mc": "1.20.1",
+  "allow": [
+    {
+      "model": "handson_furniture:diegesis/kitchen_drawer/*",
+      "element": "*",
+      "face": "*",
+      "flags": [
+        "D001",
+        "T004"
+      ],
+      "reason": "Refurbished's drawer sheet is 64x32: its UVs are 4 texels a unit across and 2 down, the same density as the faces"
+    },
+    {
+      "model": "handson_furniture:diegesis/*/*body*",
+      "element": "*",
+      "face": "*",
+      "flags": [
+        "H001"
+      ],
+      "reason": "the shell has no front face: the inside walls and shelves stand in its open front and are seen through it"
+    },
+    {
+      "model": "handson_furniture:diegesis/kitchen_drawer/*tray",
+      "element": "*",
+      "face": "*",
+      "flags": [
+        "D002",
+        "D005"
+      ],
+      "reason": "the tray's inside is the painted drawer's one flat dark colour, spread over the walls and floor"
+    },
+    {
+      "model": "handson_furniture:diegesis/kitchen_drawer/body",
+      "element": "*",
+      "face": "*",
+      "flags": [
+        "Z003",
+        "H002"
+      ],
+      "reason": "the shell is inflated 0.03 so its sides cover the shut drawers' sides (they flickered); its top reaches 0.03 into the top's band, a joint of one wall seen as one"
+    }
+  ]
+}

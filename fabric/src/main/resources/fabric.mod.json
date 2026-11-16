@@ -11,6 +11,7 @@
     "issues": "${mod_url}/issues"
   },
   "license": "${mod_license}",
+  "icon": "logo.png",
   "environment": "*",
   "entrypoints": {
     "main": ["com.pockyl.handson_furniture.fabric.HandsOnFurnitureFabric"],

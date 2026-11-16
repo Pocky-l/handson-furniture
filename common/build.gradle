@@ -2,11 +2,11 @@
 // a loader API: that goes through the loader projects.
 plugins {
     id 'multiloader-common'
-    id 'net.neoforged.moddev.legacyforge'
+    id 'net.neoforged.moddev'
 }
 
-legacyForge {
-    mcpVersion = minecraft_version
+neoForge {
+    neoFormVersion = neo_form_version
     parchment {
         mappingsVersion = parchment_mappings_version
         minecraftVersion = parchment_minecraft_version
@@ -16,8 +16,9 @@ legacyForge {
 dependencies {
     compileOnly "com.pockyl.diegesis:common:${diegesis_version}"
     compileOnly 'org.spongepowered:mixin:0.8.5'
-    // The Forge build stands for both: the classes the mixins touch are the same in its Fabric build.
-    modCompileOnly "curse.maven:refurbished-furniture-897116:${refurbished_furniture_file}"
+    // The NeoForge build stands for both (it is in Mojang names like this project): the classes the mixins touch are the same
+    // in its Fabric build.
+    compileOnly "curse.maven:refurbished-furniture-897116:${refurbished_furniture_file}"
 }
 
 configurations {

@@ -111,7 +111,7 @@ public final class StorageLogic implements StationLogic {
             for (int i = 0; i < size && !stack.isEmpty(); i++) {
                 SlotRef ref = SlotRef.of(Furniture.ITEMS, i);
                 ItemStack there = station.state().getItem(ref);
-                boolean merge = pass == 0 && !there.isEmpty() && ItemStack.isSameItemSameTags(there, stack);
+                boolean merge = pass == 0 && !there.isEmpty() && ItemStack.isSameItemSameComponents(there, stack);
                 boolean fill = pass == 1 && there.isEmpty();
                 if (!merge && !fill) {
                     continue;

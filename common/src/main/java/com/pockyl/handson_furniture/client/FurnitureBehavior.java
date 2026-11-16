@@ -250,7 +250,7 @@ final class FurnitureBehavior implements StationBehavior {
         int size = view.state().schema().slotGroups().get(Furniture.ITEMS).size();
         for (int i = 0; i < size; i++) {
             ItemStack there = view.state().getItem(SlotRef.of(Furniture.ITEMS, i));
-            if (!there.isEmpty() && there.getCount() < there.getMaxStackSize() && ItemStack.isSameItemSameTags(there, stack)) {
+            if (!there.isEmpty() && there.getCount() < there.getMaxStackSize() && ItemStack.isSameItemSameComponents(there, stack)) {
                 return true;
             }
         }

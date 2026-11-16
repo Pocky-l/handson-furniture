@@ -12,9 +12,8 @@ public final class HandsOnFurniture {
     private HandsOnFurniture() {
     }
 
-    @SuppressWarnings("removal")
     public static ResourceLocation id(String path) {
-        return new ResourceLocation(MOD_ID, path);
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
     }
 
     /** Registers the stations; called during mod setup on both sides. */

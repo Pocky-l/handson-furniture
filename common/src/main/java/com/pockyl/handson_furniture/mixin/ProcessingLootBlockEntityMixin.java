@@ -1,6 +1,7 @@
 package com.pockyl.handson_furniture.mixin;
 
 import com.mrcrayfish.furniture.refurbished.blockentity.ElectricityModuleProcessingLootBlockEntity;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,8 +17,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ElectricityModuleProcessingLootBlockEntity.class)
 abstract class ProcessingLootBlockEntityMixin {
     @Inject(method = "getUpdateTag", at = @At("RETURN"))
-    private void handson$whole(CallbackInfoReturnable<CompoundTag> info) {
-        CompoundTag whole = ((BlockEntity) (Object) this).saveWithoutMetadata();
+    private void handson$whole(HolderLookup.Provider registries, CallbackInfoReturnable<CompoundTag> info) {
+        CompoundTag whole = ((BlockEntity) (Object) this).saveWithoutMetadata(registries);
         whole.merge(info.getReturnValue());
         info.getReturnValue().merge(whole);
     }

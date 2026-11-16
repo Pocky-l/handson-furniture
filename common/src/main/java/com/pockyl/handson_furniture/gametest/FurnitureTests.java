@@ -2,6 +2,7 @@ package com.pockyl.handson_furniture.gametest;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -10,6 +11,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -35,7 +37,7 @@ import java.util.List;
 /**
  * The furniture as stations on the server: every variant Refurbished makes opens one, the station's slots are the furniture's
  * own, where each item stands is saved with the block, and a shift-click stores as the furniture's menu would. The same on
- * every loader: each registers them in its own way ({@code ModGameTests} on Forge, {@code FabricFurnitureTests} on Fabric).
+ * every loader: each registers them in its own way ({@code ModGameTests} on NeoForge, {@code FabricFurnitureTests} on Fabric).
  */
 public final class FurnitureTests {
     private static final BlockPos AT = new BlockPos(1, 1, 1);
@@ -75,7 +77,8 @@ public final class FurnitureTests {
         BlockEntity fridge = station.blockEntity();
         int far = Furniture.FRIDGE.slots() - 1;
         ((Container) fridge).setItem(far, new ItemStack(Items.CARROT, 5));
-        BlockEntity loaded = BlockEntity.loadStatic(fridge.getBlockPos(), fridge.getBlockState(), fridge.saveWithFullMetadata());
+        BlockEntity loaded = BlockEntity.loadStatic(fridge.getBlockPos(), fridge.getBlockState(),
+                fridge.saveWithFullMetadata(registries(helper)), registries(helper));
         helper.assertTrue(loaded instanceof Container container && container.getContainerSize() == Furniture.FRIDGE.slots()
                 && container.getItem(far).is(Items.CARROT) && container.getItem(far).getCount() == 5, "a stack past the menu's slots is saved");
         helper.destroyBlock(AT);
@@ -86,7 +89,7 @@ public final class FurnitureTests {
     public static void whatFallsOutGoesToTheInventoryElseTheFloor(GameTestHelper helper) {
         TestStation station = place(helper, Furniture.FRIDGE);
         StorageLogic logic = new StorageLogic(station);
-        Player player = helper.makeMockPlayer();
+        Player player = helper.makeMockPlayer(GameType.CREATIVE);
         SlotRef apple = SlotRef.of(Furniture.ITEMS, 40);
         station.state().setItem(apple, new ItemStack(Items.APPLE, 3));
         ActionHandler.apply(station, logic, player, new StationAction.Click(new StationAction.Target.Station(apple), 0,
@@ -113,8 +116,8 @@ public final class FurnitureTests {
         station.state().setItem(egg, new ItemStack(Items.EGG, 6));
         station.state().setPose(egg, pose);
         BlockEntity fridge = station.blockEntity();
-        CompoundTag saved = fridge.saveWithFullMetadata();
-        BlockEntity loaded = BlockEntity.loadStatic(fridge.getBlockPos(), fridge.getBlockState(), saved);
+        CompoundTag saved = fridge.saveWithFullMetadata(registries(helper));
+        BlockEntity loaded = BlockEntity.loadStatic(fridge.getBlockPos(), fridge.getBlockState(), saved, registries(helper));
         helper.assertTrue(loaded instanceof StationHost, "the fridge keeps a station state");
         StationState state = ((StationHost) loaded).stationState();
         helper.assertTrue(state.schema() == Furniture.FRIDGE.type().schema(), "of the fridge's station");
@@ -126,13 +129,14 @@ public final class FurnitureTests {
     public static void aClickOpensTheDoorAndItStaysOpen(GameTestHelper helper) {
         TestStation station = place(helper, Furniture.FRIDGE);
         StorageLogic logic = new StorageLogic(station);
-        Player player = helper.makeMockPlayer();
+        Player player = helper.makeMockPlayer(GameType.CREATIVE);
         helper.assertTrue(station.state().getControl(Furniture.OPEN) == 0.0F, "a new fridge is shut");
         logic.onCustomAction(station, player, StorageLogic.DOOR, new CompoundTag());
         helper.assertTrue(station.state().getControl(Furniture.OPEN) == 1.0F, "a click opens it");
         helper.assertTrue(isOpenBlock(station), "as the fridge itself shows it: " + station.level().getBlockState(station.pos()));
         BlockEntity fridge = station.blockEntity();
-        BlockEntity loaded = BlockEntity.loadStatic(fridge.getBlockPos(), fridge.getBlockState(), fridge.saveWithFullMetadata());
+        BlockEntity loaded = BlockEntity.loadStatic(fridge.getBlockPos(), fridge.getBlockState(),
+                fridge.saveWithFullMetadata(registries(helper)), registries(helper));
         helper.assertTrue(((StationHost) loaded).stationState().getControl(Furniture.OPEN) == 1.0F, "left open, it is kept open");
         logic.onCustomAction(station, player, StorageLogic.DOOR, new CompoundTag());
         helper.assertTrue(station.state().getControl(Furniture.OPEN) == 0.0F && !isOpenBlock(station), "another click shuts it");
@@ -143,7 +147,7 @@ public final class FurnitureTests {
     public static void theTwoDrawersOpenOnTheirOwn(GameTestHelper helper) {
         TestStation station = place(helper, Furniture.KITCHEN_DRAWER);
         StorageLogic logic = new StorageLogic(station);
-        Player player = helper.makeMockPlayer();
+        Player player = helper.makeMockPlayer(GameType.CREATIVE);
         CompoundTag lower = new CompoundTag();
         lower.putString(StorageLogic.CONTROL, Furniture.OPEN_LOWER);
         logic.onCustomAction(station, player, StorageLogic.DOOR, lower);
@@ -165,12 +169,12 @@ public final class FurnitureTests {
         SlotRef egg = SlotRef.of(Furniture.ITEMS, 2);
         station.state().setItem(egg, new ItemStack(Items.EGG, 3));
         station.state().setPose(egg, new ItemPose(4.0F, 6.0F, 5.0F, 1.0F, new Quaternionf(), 1.0F, -1));
-        logic.onCustomAction(station, helper.makeMockPlayer(), StorageLogic.DOOR, new CompoundTag());
+        logic.onCustomAction(station, helper.makeMockPlayer(GameType.CREATIVE), StorageLogic.DOOR, new CompoundTag());
         BlockEntity fridge = station.blockEntity();
         helper.assertTrue(fridge.getUpdatePacket() != null, "the fridge sends its data to clients");
         // As a client takes it: into the block entity it already has there.
         BlockEntity seen = fridge.getType().create(fridge.getBlockPos(), fridge.getBlockState());
-        seen.load(fridge.getUpdateTag());
+        seen.loadWithComponents(fridge.getUpdateTag(registries(helper)), registries(helper));
         helper.assertTrue(((StationHost) seen).stationState().getControl(Furniture.OPEN) == 1.0F, "with its door open");
         helper.assertTrue(((StationHost) seen).stationState().getPose(egg) != null && ((Container) seen).getItem(2).is(Items.EGG),
                 "and the egg where it stands");
@@ -207,7 +211,7 @@ public final class FurnitureTests {
         Container drawer = (Container) station.blockEntity();
         drawer.setItem(0, new ItemStack(Items.STICK));
         drawer.setItem(5, new ItemStack(Items.BREAD, 60));
-        Player player = helper.makeMockPlayer();
+        Player player = helper.makeMockPlayer(GameType.CREATIVE);
         player.getInventory().items.set(7, new ItemStack(Items.BREAD, 10));
         CompoundTag data = new CompoundTag();
         data.putInt(StorageLogic.SLOT, 7);
@@ -225,13 +229,17 @@ public final class FurnitureTests {
         for (int i = 0; i < drawer.getContainerSize(); i++) {
             drawer.setItem(i, new ItemStack(Items.STONE, i == 3 ? 62 : 64));
         }
-        Player player = helper.makeMockPlayer();
+        Player player = helper.makeMockPlayer(GameType.CREATIVE);
         player.getInventory().items.set(0, new ItemStack(Items.STONE, 5));
         CompoundTag data = new CompoundTag();
         data.putInt(StorageLogic.SLOT, 0);
         logic.onCustomAction(station, player, StorageLogic.STORE, data);
         helper.assertTrue(player.getInventory().items.get(0).getCount() == 3, "two fit, three stay in the hand's inventory");
         helper.succeed();
+    }
+
+    private static HolderLookup.Provider registries(GameTestHelper helper) {
+        return helper.getLevel().registryAccess();
     }
 
     private static Block refurbished(GameTestHelper helper, Furniture furniture, String variant) {

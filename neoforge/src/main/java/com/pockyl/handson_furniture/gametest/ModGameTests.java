@@ -2,12 +2,12 @@ package com.pockyl.handson_furniture.gametest;
 
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import com.pockyl.handson_furniture.HandsOnFurniture;
 
-/** {@link FurnitureTests} on Forge. */
+/** {@link FurnitureTests} on NeoForge. */
 @GameTestHolder(HandsOnFurniture.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class ModGameTests {

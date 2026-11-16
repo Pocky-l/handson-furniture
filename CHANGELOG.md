@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0]
+## [1.0.0+1.21.1]
 
 The first release: the kitchen furniture of [MrCrayfish's Furniture Mod: Refurbished](https://www.curseforge.com/minecraft/mc-mods/refurbished-furniture) opens right where it stands, with no menu screen.
 
@@ -16,4 +16,4 @@ The first release: the kitchen furniture of [MrCrayfish's Furniture Mod: Refurbi
 - Cans, bottles and other 3D food from mods stand upright, and a lantern or torch on a shelf lights up the inside.
 - Shift-click a stack to put it away or take it back, and point at a stack to see how many it holds.
 - Hoppers, breaking the furniture and its menu for players without the mod keep working as before.
-- Install it on the server and the client, Forge or Fabric.
+- Install it on the server and the client, NeoForge or Fabric.

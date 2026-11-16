@@ -76,9 +76,8 @@ public enum Furniture {
     }
 
     /** The id of Refurbished's block of a variant. */
-    @SuppressWarnings("removal")
     public ResourceLocation blockId(String variant) {
-        return new ResourceLocation(REFURBISHED, variant + "_" + suffix);
+        return ResourceLocation.fromNamespaceAndPath(REFURBISHED, variant + "_" + suffix);
     }
 
     public StationType type() {

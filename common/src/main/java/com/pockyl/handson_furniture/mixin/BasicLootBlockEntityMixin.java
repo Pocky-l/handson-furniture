@@ -2,6 +2,7 @@ package com.pockyl.handson_furniture.mixin;
 
 import com.mrcrayfish.furniture.refurbished.blockentity.BasicLootBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
@@ -56,12 +57,15 @@ abstract class BasicLootBlockEntityMixin extends BlockEntity implements StationH
     /** What was read before the state was first asked for: the block entity loads before its block state is known. */
     @Unique
     private CompoundTag handson$read;
+    /** The registries it was read with, for that first load: a block entity loads before it has a level. */
+    @Unique
+    private HolderLookup.Provider handson$registries;
 
     private BasicLootBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
-    /** Made as large as the station's room: {@code load} makes its list as large as the size kept here. */
+    /** Made as large as the station's room: {@code loadAdditional} makes its list as large as the size kept here. */
     @Inject(method = "<init>", at = @At("RETURN"))
     private void handson$roomy(BlockEntityType<?> type, BlockPos pos, BlockState state, int size, CallbackInfo info) {
         Furniture.of(state.getBlock()).ifPresent(furniture -> {
@@ -86,15 +90,15 @@ abstract class BasicLootBlockEntityMixin extends BlockEntity implements StationH
                 handson$station.bindSlots(Furniture.ITEMS, SlotStorage.of(container, 0, items.size()));
             }
             if (handson$read != null) {
-                handson$station.load(handson$read);
+                handson$station.load(handson$read, level != null ? level.registryAccess() : handson$registries);
             }
         }
         return handson$station;
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        return saveWithoutMetadata();
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return saveWithoutMetadata(registries);
     }
 
     @Override
@@ -103,18 +107,19 @@ abstract class BasicLootBlockEntityMixin extends BlockEntity implements StationH
     }
 
     @Inject(method = "saveAdditional", at = @At("TAIL"))
-    private void handson$save(CompoundTag tag, CallbackInfo info) {
-        CompoundTag saved = handson$station != null ? handson$station.save() : handson$read;
+    private void handson$save(CompoundTag tag, HolderLookup.Provider registries, CallbackInfo info) {
+        CompoundTag saved = handson$station != null ? handson$station.save(registries) : handson$read;
         if (saved != null && !saved.isEmpty()) {
             tag.put(handson$KEY, saved);
         }
     }
 
-    @Inject(method = "load", at = @At("TAIL"))
-    private void handson$load(CompoundTag tag, CallbackInfo info) {
+    @Inject(method = "loadAdditional", at = @At("TAIL"))
+    private void handson$load(CompoundTag tag, HolderLookup.Provider registries, CallbackInfo info) {
         handson$read = tag.contains(handson$KEY) ? tag.getCompound(handson$KEY) : null;
+        handson$registries = registries;
         if (handson$station != null) {
-            handson$station.load(handson$read != null ? handson$read : new CompoundTag());
+            handson$station.load(handson$read != null ? handson$read : new CompoundTag(), registries);
             handson$station.pollStorages();
         }
     }

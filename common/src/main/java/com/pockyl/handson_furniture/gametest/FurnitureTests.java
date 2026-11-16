@@ -3,7 +3,6 @@ package com.pockyl.handson_furniture.gametest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -15,8 +14,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.gametest.GameTestHolder;
-import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import org.joml.Quaternionf;
 
 import com.pockyl.diegesis.api.Diegesis;
@@ -29,7 +26,6 @@ import com.pockyl.diegesis.api.station.StationType;
 import com.pockyl.diegesis.impl.action.ActionHandler;
 import com.pockyl.diegesis.impl.action.StationAction;
 import com.pockyl.handson_furniture.Furniture;
-import com.pockyl.handson_furniture.HandsOnFurniture;
 import com.pockyl.handson_furniture.station.StorageLogic;
 
 import java.util.ArrayList;
@@ -38,17 +34,15 @@ import java.util.List;
 
 /**
  * The furniture as stations on the server: every variant Refurbished makes opens one, the station's slots are the furniture's
- * own, where each item stands is saved with the block, and a shift-click stores as the furniture's menu would.
+ * own, where each item stands is saved with the block, and a shift-click stores as the furniture's menu would. The same on
+ * every loader: each registers them in its own way ({@code ModGameTests} on Forge, {@code FabricFurnitureTests} on Fabric).
  */
-@GameTestHolder(HandsOnFurniture.MOD_ID)
-@PrefixGameTestTemplate(false)
 public final class FurnitureTests {
     private static final BlockPos AT = new BlockPos(1, 1, 1);
 
     private FurnitureTests() {
     }
 
-    @GameTest(template = "empty")
     public static void everyVariantIsAStation(GameTestHelper helper) {
         for (Furniture furniture : Furniture.values()) {
             for (String variant : furniture.variants()) {
@@ -61,7 +55,6 @@ public final class FurnitureTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty")
     public static void slotsAreTheFurnituresOwn(GameTestHelper helper) {
         for (Furniture furniture : Furniture.values()) {
             TestStation station = place(helper, furniture);
@@ -76,7 +69,6 @@ public final class FurnitureTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty")
     public static void roomPastTheMenuIsKeptAndDropped(GameTestHelper helper) {
         TestStation station = place(helper, Furniture.FRIDGE);
         new StorageLogic(station);
@@ -91,7 +83,6 @@ public final class FurnitureTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty")
     public static void whatFallsOutGoesToTheInventoryElseTheFloor(GameTestHelper helper) {
         TestStation station = place(helper, Furniture.FRIDGE);
         StorageLogic logic = new StorageLogic(station);
@@ -114,7 +105,6 @@ public final class FurnitureTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty")
     public static void placesAreSavedWithTheBlock(GameTestHelper helper) {
         TestStation station = place(helper, Furniture.FRIDGE);
         new StorageLogic(station);
@@ -133,7 +123,6 @@ public final class FurnitureTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty")
     public static void aClickOpensTheDoorAndItStaysOpen(GameTestHelper helper) {
         TestStation station = place(helper, Furniture.FRIDGE);
         StorageLogic logic = new StorageLogic(station);
@@ -151,7 +140,6 @@ public final class FurnitureTests {
     }
 
     /** The kitchen drawer's two drawers open on their own; the block shows open while either is. */
-    @GameTest(template = "empty")
     public static void theTwoDrawersOpenOnTheirOwn(GameTestHelper helper) {
         TestStation station = place(helper, Furniture.KITCHEN_DRAWER);
         StorageLogic logic = new StorageLogic(station);
@@ -171,7 +159,6 @@ public final class FurnitureTests {
     }
 
     /** A player who joins later learns from the block's update that its door was left open, and what stands behind it. */
-    @GameTest(template = "empty")
     public static void clientsAreToldOfAnOpenDoor(GameTestHelper helper) {
         TestStation station = place(helper, Furniture.FRIDGE);
         StorageLogic logic = new StorageLogic(station);
@@ -201,7 +188,6 @@ public final class FurnitureTests {
         return false;
     }
 
-    @GameTest(template = "empty")
     public static void anEmptiedSlotForgetsItsPlace(GameTestHelper helper) {
         TestStation station = place(helper, Furniture.KITCHEN_CABINET);
         new StorageLogic(station);
@@ -215,7 +201,6 @@ public final class FurnitureTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty")
     public static void aShiftClickMergesThenFills(GameTestHelper helper) {
         TestStation station = place(helper, Furniture.KITCHEN_DRAWER);
         StorageLogic logic = new StorageLogic(station);
@@ -233,7 +218,6 @@ public final class FurnitureTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty")
     public static void aFullDrawerLeavesTheRest(GameTestHelper helper) {
         TestStation station = place(helper, Furniture.KITCHEN_DRAWER);
         StorageLogic logic = new StorageLogic(station);

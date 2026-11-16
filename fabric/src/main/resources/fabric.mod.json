@@ -15,7 +15,8 @@
   "environment": "*",
   "entrypoints": {
     "main": ["com.pockyl.handson_furniture.fabric.HandsOnFurnitureFabric"],
-    "client": ["com.pockyl.handson_furniture.fabric.HandsOnFurnitureFabricClient"]
+    "client": ["com.pockyl.handson_furniture.fabric.HandsOnFurnitureFabricClient"],
+    "fabric-gametest": ["com.pockyl.handson_furniture.fabric.FabricFurnitureTests"]
   },
   "mixins": ["handson_furniture.mixins.json"],
   "depends": {

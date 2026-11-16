@@ -33,6 +33,36 @@ loom {
     }
 }
 
+configurations {
+    gameTestMods { transitive = false }
+}
+
+dependencies {
+    gameTestMods "curse.maven:refurbished-furniture-897116:${refurbished_furniture_fabric_file}"
+    gameTestMods "curse.maven:framework-549225:${framework_fabric_file}"
+    gameTestMods "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+    // Not in the fabric-api jar: the module that runs the tests (the version fabric-api's POM names).
+    gameTestMods 'net.fabricmc.fabric-api:fabric-gametest-api-v1:1.2.15+1802ada577'
+}
+
+// The game tests of common on a production Fabric server with the release jars of this mod, Diegesis and Refurbished:
+// gradlew :fabric:runGameTest. They need no client and no development run.
+tasks.register('runGameTest', net.fabricmc.loom.task.prod.ServerProductionRunTask) {
+    group = 'fabric'
+    dependsOn gradle.includedBuild('diegesis').task(':fabric:remapJar')
+    mods.from(tasks.named('remapJar'))
+    mods.from(configurations.gameTestMods)
+    mods.from(file("../../diegesis/fabric/build/libs/diegesis-fabric-${minecraft_version}-${diegesis_version}.jar"))
+    installerVersion = '1.1.0'
+    jvmArgs.add('-Dfabric-api.gametest')
+    runDir = file('run-gametest')
+    def eula = file('run-gametest/eula.txt')
+    doFirst {
+        eula.parentFile.mkdirs()
+        eula.text = 'eula=true' + System.lineSeparator()
+    }
+}
+
 tasks.named('processResources', ProcessResources) {
     var replaceProperties = [
             minecraft_version                : minecraft_version,

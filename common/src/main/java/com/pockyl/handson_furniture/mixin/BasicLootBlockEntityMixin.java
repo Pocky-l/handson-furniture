@@ -9,6 +9,7 @@ import net.minecraft.world.Container;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -34,6 +35,8 @@ import com.pockyl.handson_furniture.HandsOnFurniture;
  *
  * <p>Clients are sent that data too (Refurbished sends none): a door left open, and what stands behind it, are seen by players
  * who join or come near later, while nobody uses the furniture.
+ *
+ * <p>Whatever changes what it holds tells them too: a hopper, a command or another mod, not only a hand at the station.
  *
  * <p>Its container holds as many stacks as {@link Furniture#slots()} says, more than its menu has: what fits inside is a matter
  * of room on its shelves, not of slots. Hoppers reach the slots they always did; breaking it drops everything; a player without
@@ -100,6 +103,19 @@ abstract class BasicLootBlockEntityMixin extends BlockEntity implements StationH
     @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    /**
+     * Clients see what the furniture holds, whoever changed it: a hopper, a command or another mod reach them as a hand at the
+     * station does. The game sends a block's update at most once a tick however often it is asked, so a hopper or a burst of
+     * changes costs no more than one packet a tick.
+     */
+    @Override
+    public void setChanged() {
+        super.setChanged();
+        if (level != null && !level.isClientSide() && Furniture.of(getBlockState().getBlock()).isPresent()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        }
     }
 
     @Inject(method = "saveAdditional", at = @At("TAIL"))

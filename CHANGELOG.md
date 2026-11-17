@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.0] - Unreleased
+
+- Coolers, storage cabinets and chests of drawers open by hand too, in every wood and colour, and hold more than their
+  menus.
+- A cooler's lid swings up and rocks back onto its hinge, and what you put in lies on its floor where you set it.
+- Microwaves open by hand: things stand on the plate, which turns while the microwave heats.
+- Stoves open by hand: things stand on the oven's floor and rack, and three bake at once wherever they stand.
+- Microwaves and stoves show what they hold through their windows, also in the world.
+- The freezer, the microwave and the stove have their own power switch on them, in their finish; the microwave's green
+  lamp shows it is on.
+- The freezer freezes what you put in wherever it stands, and what comes out frozen stands beside it.
+- Refurbished's wrench links furniture to power again: with it in hand, using the furniture no longer opens it.
+- What a hopper, a command or another mod puts into furniture shows inside at once, for everyone near.
+- Things that come in by a shift-click or a hopper stand where you can see them.
+- Nothing goes through the shut glass door of a microwave or an oven.
+- From the fridge, S goes down to its freezer, and W goes back up.
+
 ## [1.0.0]
 
 The first release: the kitchen furniture of [MrCrayfish's Furniture Mod: Refurbished](https://www.curseforge.com/minecraft/mc-mods/refurbished-furniture) opens right where it stands, with no menu screen.

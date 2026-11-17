@@ -1,0 +1,7 @@
+{
+  "parent": "handson_furniture:diegesis/storage_cabinet/door_left",
+  "textures": {
+    "particle": "refurbished_furniture:block/dark_oak_particle",
+    "texture": "refurbished_furniture:block/dark_oak_storage_cabinet"
+  }
+}

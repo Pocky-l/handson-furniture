@@ -2,8 +2,11 @@ package com.pockyl.handson_furniture;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+
+import com.mrcrayfish.furniture.refurbished.item.WrenchItem;
 
 import com.pockyl.diegesis.api.Diegesis;
 import com.pockyl.diegesis.api.state.ControlSpec;
@@ -12,6 +15,7 @@ import com.pockyl.diegesis.api.state.StationSchema;
 import com.pockyl.diegesis.api.station.StationType;
 import com.pockyl.handson_furniture.station.StorageLogic;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +32,23 @@ public enum Furniture {
     FREEZER("freezer", "freezer", 250, List.of("light", "dark"), List.of(Furniture.OPEN)),
     KITCHEN_CABINET("kitchen_cabinet", "kitchen_storage_cabinet", 160, Woods.AND_COLOURS, List.of(Furniture.OPEN)),
     /** Two drawers, the upper one and the lower one Refurbished draws as a fixed panel, sharing its slots. */
-    KITCHEN_DRAWER("kitchen_drawer", "kitchen_drawer", 160, Woods.AND_COLOURS, List.of(Furniture.OPEN, Furniture.OPEN_LOWER));
+    KITCHEN_DRAWER("kitchen_drawer", "kitchen_drawer", 160, Woods.AND_COLOURS, List.of(Furniture.OPEN, Furniture.OPEN_LOWER)),
+    /** A box with a lid hinged at its back: what it holds lies on its floor, seen from above. */
+    COOLER("cooler", "cooler", 160, Woods.COLOURS, List.of(Furniture.OPEN)),
+    /** A wooden cabinet standing on the floor, its door hung on either side; one shelf. */
+    STORAGE_CABINET("storage_cabinet", "storage_cabinet", 160, Woods.WOODS, List.of(Furniture.OPEN)),
+    /**
+     * A chest of drawers: two drawers, the upper one and the lower one Refurbished draws as a fixed panel, sharing its slots, as
+     * the kitchen drawer's. Its top joins the tops of the ones beside it.
+     */
+    DRAWER("drawer", "drawer", 160, Woods.WOODS, List.of(Furniture.OPEN, Furniture.OPEN_LOWER)),
+    /** Refurbished heats its first slot into its second while it is on and has power; what waits stands beside, on the plate. */
+    MICROWAVE("microwave", "microwave", 64, List.of("light", "dark"), List.of(Furniture.OPEN)),
+    /**
+     * The oven of the stove: Refurbished bakes each of its first three slots into the one three further on while the stove is
+     * on and has power; what waits stands beside, on the floor and the rack.
+     */
+    STOVE("stove", "stove", 160, List.of("light", "dark"), List.of(Furniture.OPEN));
 
     /** The slot group of every station: the furniture's own slots, in order. */
     public static final String ITEMS = "items";
@@ -36,6 +56,11 @@ public enum Furniture {
     public static final String OPEN = "open";
     /** The same for a second door or drawer under the first: the kitchen drawer's lower drawer. */
     public static final String OPEN_LOWER = "open_lower";
+    /**
+     * The power switch of a freezer, a microwave or a stove, 1 on: Refurbished's own on and off (its menu's power button), kept
+     * by the furniture itself; the station's control only shows it and turns it.
+     */
+    public static final String POWER = "power";
     public static final String REFURBISHED = "refurbished_furniture";
 
     private final String name;
@@ -113,6 +138,8 @@ public enum Furniture {
                 // The scene draws the furniture itself, so that its doors and drawers move and its insides show.
                 .hidesBlock()
                 .schema(schema())
+                // Refurbished's wrench links the furniture to power: with it in hand the block is used as before.
+                .openWhen((player, pos, state) -> StationType.OpenCondition.DEFAULT.test(player, pos, state) && !holdsWrench(player))
                 .logic(StorageLogic::new);
         for (String variant : variants) {
             ResourceLocation id = blockId(variant);
@@ -127,14 +154,44 @@ public enum Furniture {
         for (String control : controls) {
             schema.control(control, ControlSpec.toggle(false));
         }
+        if (hasPower()) {
+            // Refurbished makes them switched off: the power button of their menu switches them on. Off and on, whether the
+            // scene shows a rocker or (the stove) a knob turned between its two steps.
+            schema.control(POWER, ControlSpec.toggle(false));
+        }
         return schema.build();
     }
 
-    /** The woods and dye colours Refurbished makes its kitchen furniture in. */
+    /**
+     * Whether its door has a window: the microwave and the stove. What it holds shows through the glass with the door shut, so
+     * the world shows the station's copy of it at all times, with its controls, not Refurbished's block with its painted pane.
+     */
+    public boolean hasWindow() {
+        return this == MICROWAVE || this == STOVE;
+    }
+
+    /** Whether it has Refurbished's on and off: the freezer, the microwave and the stove. */
+    public boolean hasPower() {
+        return this == FREEZER || this == MICROWAVE || this == STOVE;
+    }
+
+    private static boolean holdsWrench(Player player) {
+        return player.getMainHandItem().getItem() instanceof WrenchItem || player.getOffhandItem().getItem() instanceof WrenchItem;
+    }
+
+    /** The woods and dye colours Refurbished makes its furniture in: kitchen furniture in both, coolers in the colours, storage in the woods. */
     private static final class Woods {
-        static final List<String> AND_COLOURS = List.of("oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry",
-                "crimson", "warped", "white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "light_gray", "cyan",
-                "purple", "blue", "brown", "green", "red", "black");
+        static final List<String> COLOURS = List.of("white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray",
+                "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black");
+        static final List<String> WOODS = List.of("oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry",
+                "crimson", "warped");
+        static final List<String> AND_COLOURS = concat(WOODS, COLOURS);
+
+        private static List<String> concat(List<String> first, List<String> second) {
+            List<String> all = new ArrayList<>(first);
+            all.addAll(second);
+            return List.copyOf(all);
+        }
 
         private Woods() {
         }

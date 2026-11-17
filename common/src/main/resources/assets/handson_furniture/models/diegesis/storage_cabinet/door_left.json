@@ -1,0 +1,78 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "refurbished_furniture:block/oak_particle",
+    "texture": "refurbished_furniture:block/oak_storage_cabinet"
+  },
+  "elements": [
+    {
+      "name": "door",
+      "from": [
+        0,
+        0,
+        14
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            4,
+            16,
+            8
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            15,
+            0,
+            15.5,
+            4
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            11,
+            0,
+            15,
+            4
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            15.5,
+            0,
+            16,
+            4
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            9,
+            8,
+            5,
+            7.5
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            9,
+            8,
+            5,
+            8.5
+          ],
+          "texture": "#texture"
+        }
+      }
+    }
+  ]
+}

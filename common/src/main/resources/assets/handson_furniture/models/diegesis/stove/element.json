@@ -1,0 +1,171 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "minecraft:block/redstone_block",
+    "element": "minecraft:block/redstone_block"
+  },
+  "elements": [
+    {
+      "name": "element_top",
+      "from": [
+        2,
+        11,
+        1
+      ],
+      "to": [
+        14,
+        12,
+        2
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            2,
+            2,
+            3,
+            3
+          ],
+          "texture": "#element"
+        },
+        "south": {
+          "uv": [
+            2,
+            2,
+            14,
+            3
+          ],
+          "texture": "#element"
+        },
+        "west": {
+          "uv": [
+            2,
+            2,
+            3,
+            3
+          ],
+          "texture": "#element"
+        },
+        "up": {
+          "uv": [
+            2,
+            2,
+            14,
+            3
+          ],
+          "texture": "#element"
+        },
+        "down": {
+          "uv": [
+            2,
+            2,
+            14,
+            3
+          ],
+          "texture": "#element"
+        }
+      }
+    },
+    {
+      "name": "element_side",
+      "from": [
+        13,
+        4,
+        1
+      ],
+      "to": [
+        14,
+        11,
+        2
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            2,
+            2,
+            3,
+            9
+          ],
+          "texture": "#element"
+        },
+        "south": {
+          "uv": [
+            2,
+            2,
+            3,
+            9
+          ],
+          "texture": "#element"
+        },
+        "west": {
+          "uv": [
+            2,
+            2,
+            3,
+            9
+          ],
+          "texture": "#element"
+        }
+      }
+    },
+    {
+      "name": "element_bottom",
+      "from": [
+        2,
+        3,
+        1
+      ],
+      "to": [
+        14,
+        4,
+        2
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            2,
+            2,
+            3,
+            3
+          ],
+          "texture": "#element"
+        },
+        "south": {
+          "uv": [
+            2,
+            2,
+            14,
+            3
+          ],
+          "texture": "#element"
+        },
+        "west": {
+          "uv": [
+            2,
+            2,
+            3,
+            3
+          ],
+          "texture": "#element"
+        },
+        "up": {
+          "uv": [
+            2,
+            2,
+            14,
+            3
+          ],
+          "texture": "#element"
+        },
+        "down": {
+          "uv": [
+            2,
+            2,
+            14,
+            3
+          ],
+          "texture": "#element"
+        }
+      }
+    }
+  ]
+}

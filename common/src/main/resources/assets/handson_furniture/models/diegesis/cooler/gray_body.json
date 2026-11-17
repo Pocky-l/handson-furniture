@@ -1,0 +1,7 @@
+{
+  "parent": "handson_furniture:diegesis/cooler/body",
+  "textures": {
+    "particle": "refurbished_furniture:block/gray_particle",
+    "texture": "refurbished_furniture:block/gray_cooler"
+  }
+}

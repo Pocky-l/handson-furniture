@@ -14,7 +14,7 @@
 
 <p align="center"><i>Open your kitchen with your own hands.</i></p>
 
-<p align="center"><b>The fridge, the freezer, the kitchen cabinets and drawers of MrCrayfish's Furniture Mod: Refurbished open right where they stand, with no menu screen. Put your food on the shelves where you want it, turned and stacked as you like, and it stays there for everyone to see.</b></p>
+<p align="center"><b>The fridge, the freezer, the kitchen cabinets and drawers, the storage cabinets, the chests of drawers, the coolers, the microwaves and the ovens of MrCrayfish's Furniture Mod: Refurbished open right where they stand, with no menu screen. Put your food on the shelves where you want it, turned and stacked as you like, and it stays there for everyone to see.</b></p>
 
 <p align="center"><img src="docs/showcase/fridge.gif" alt="A fridge opened by hand and filled: a cake, a carrot, bamboo and eggs in the door, a second cake on the first" width="720"></p>
 
@@ -31,11 +31,18 @@ built on [Diegesis](https://www.curseforge.com/minecraft/mc-mods/diegesis), from
 
 - **Fridge.** Use it and its door comes unstuck from the seal and swings part way open. Food stands on its two shelves
   and in the three bins of the door, and turns along with the door.
-- **Freezer.** The lower block under the fridge opens the same way; what freezes in it and what came out frozen stand on
-  its shelves.
+- **Freezer.** The lower block under the fridge opens the same way. Its power switch is inside: switch it on and it freezes
+  what you put in, wherever it stands. W and S take you between the fridge and the freezer.
 - **Kitchen cabinets.** The door swings open on its hinge and the camera looks in from the side it leaves free.
 - **Kitchen drawers.** Two drawers, the upper and the lower one, each pulled out on its own. The camera follows the one
   you pull out.
+- **Storage cabinets.** The wooden cabinets open like the kitchen ones, with a shelf inside.
+- **Chests of drawers.** Both drawers pull out by hand, like the kitchen ones.
+- **Coolers.** Lift the lid and look down into the box: what you put in lies on its floor between the walls.
+- **Microwaves.** Things stand on the plate. Flip the switch on the panel and the plate turns while it heats, with what
+  stands on it; the window shows the inside with the door shut.
+- **Ovens.** The stove's oven door comes down level, with a floor and a rack inside. Turn the knob on the hob's rim: the
+  element at the back glows, and with power the oven bakes three things at a time, wherever they stand.
 - **Put things anywhere.** Things stand where you put them, turned and sized as you like, even on top of each other. They
   stay there, and every player sees them.
 - **Weight.** A stone block shoves an apple aside, an apple hardly moves the block. Things stop where they land, a block

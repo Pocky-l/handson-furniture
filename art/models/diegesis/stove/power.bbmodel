@@ -1,0 +1,418 @@
+{
+	"meta": {
+		"format_version": "5.0",
+		"model_format": "java_block",
+		"box_uv": false
+	},
+	"name": "stove_power",
+	"parent": "",
+	"java_block_version": "1.9.0",
+	"ambientocclusion": true,
+	"front_gui_light": false,
+	"visible_box": [
+		1,
+		1,
+		0
+	],
+	"variable_placeholders": "",
+	"multi_file_ruleset": "",
+	"variable_placeholder_buttons": [],
+	"unhandled_root_fields": {},
+	"resolution": {
+		"width": 32,
+		"height": 32
+	},
+	"elements": [
+		{
+			"name": "disc",
+			"box_uv": false,
+			"render_order": "default",
+			"rescale": false,
+			"locked": false,
+			"shade": true,
+			"light_emission": 0,
+			"export": true,
+			"scope": 0,
+			"allow_mirror_modeling": true,
+			"from": [
+				6,
+				0,
+				7
+			],
+			"to": [
+				9,
+				1,
+				8
+			],
+			"autouv": 0,
+			"color": 4,
+			"origin": [
+				8,
+				8,
+				8
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						5,
+						3,
+						6
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						4,
+						5,
+						5,
+						6
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						7,
+						3,
+						8
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						4,
+						7,
+						5,
+						8
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						9,
+						3,
+						10
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						1,
+						1
+					],
+					"texture": null
+				}
+			},
+			"type": "cube",
+			"uuid": "dec2183b-a1bc-cfb0-0bfb-c4dff389a8bf"
+		},
+		{
+			"name": "disc_front",
+			"box_uv": false,
+			"render_order": "default",
+			"rescale": false,
+			"locked": false,
+			"shade": true,
+			"light_emission": 0,
+			"export": true,
+			"scope": 0,
+			"allow_mirror_modeling": true,
+			"from": [
+				7,
+				0,
+				6
+			],
+			"to": [
+				8,
+				1,
+				7
+			],
+			"autouv": 0,
+			"color": 1,
+			"origin": [
+				8,
+				8,
+				8
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						6,
+						5,
+						7,
+						6
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						8,
+						5,
+						9,
+						6
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						1,
+						1
+					],
+					"texture": null
+				},
+				"west": {
+					"uv": [
+						10,
+						5,
+						11,
+						6
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						1,
+						1
+					],
+					"texture": null
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						1,
+						1
+					],
+					"texture": null
+				}
+			},
+			"type": "cube",
+			"uuid": "e2f6f8b4-6358-f146-b4a6-a0b45e0815d8"
+		},
+		{
+			"name": "disc_back",
+			"box_uv": false,
+			"render_order": "default",
+			"rescale": false,
+			"locked": false,
+			"shade": true,
+			"light_emission": 0,
+			"export": true,
+			"scope": 0,
+			"allow_mirror_modeling": true,
+			"from": [
+				7,
+				0,
+				8
+			],
+			"to": [
+				8,
+				1,
+				9
+			],
+			"autouv": 0,
+			"color": 5,
+			"origin": [
+				8,
+				8,
+				8
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						1,
+						1
+					],
+					"texture": null
+				},
+				"east": {
+					"uv": [
+						8,
+						7,
+						9,
+						8
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						6,
+						7,
+						7,
+						8
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						10,
+						7,
+						11,
+						8
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						1,
+						1
+					],
+					"texture": null
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						1,
+						1
+					],
+					"texture": null
+				}
+			},
+			"type": "cube",
+			"uuid": "bc2aa68f-84bf-076e-f91d-d4f4e97fec32"
+		},
+		{
+			"name": "grip",
+			"box_uv": false,
+			"render_order": "default",
+			"rescale": false,
+			"locked": false,
+			"shade": true,
+			"light_emission": 0,
+			"export": true,
+			"scope": 0,
+			"allow_mirror_modeling": true,
+			"from": [
+				7,
+				1,
+				6
+			],
+			"to": [
+				8,
+				2,
+				9
+			],
+			"autouv": 0,
+			"color": 2,
+			"origin": [
+				8,
+				8,
+				8
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						12,
+						5,
+						13,
+						6
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						6,
+						9,
+						9,
+						10
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						14,
+						5,
+						15,
+						6
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						10,
+						9,
+						13,
+						10
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						15,
+						5,
+						16,
+						8
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						1,
+						1
+					],
+					"texture": null
+				}
+			},
+			"type": "cube",
+			"uuid": "97092e50-4fab-39b0-4e0a-6f3486e2fcf9"
+		}
+	],
+	"groups": [],
+	"outliner": [
+		"dec2183b-a1bc-cfb0-0bfb-c4dff389a8bf",
+		"e2f6f8b4-6358-f146-b4a6-a0b45e0815d8",
+		"bc2aa68f-84bf-076e-f91d-d4f4e97fec32",
+		"97092e50-4fab-39b0-4e0a-6f3486e2fcf9"
+	],
+	"textures": [
+		{
+			"name": "light_appliance_controls.png",
+			"path": "",
+			"folder": "",
+			"namespace": "",
+			"id": "0",
+			"group": "",
+			"scope": 0,
+			"width": 0,
+			"height": 0,
+			"uv_width": 32,
+			"uv_height": 32,
+			"particle": false,
+			"use_as_default": false,
+			"layers_enabled": false,
+			"sync_to_project": "",
+			"file_format": "png",
+			"render_mode": "default",
+			"render_sides": "auto",
+			"wrap_mode": "limited",
+			"pbr_channel": "color",
+			"fps": 7,
+			"force_translucent": false,
+			"frame_time": 1,
+			"frame_order_type": "loop",
+			"frame_order": "",
+			"frame_interpolate": false,
+			"visible": true,
+			"internal": true,
+			"saved": true,
+			"uuid": "03783f0b-c0b5-042a-10e7-3319700088c6",
+			"source": "",
+			"relative_path": "../../../../common/src/main/resources/assets/handson_furniture/textures/block/light_appliance_controls.png"
+		}
+	]
+}

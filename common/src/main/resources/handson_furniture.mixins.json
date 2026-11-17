@@ -6,7 +6,10 @@
   "refmap": "handson_furniture.refmap.json",
   "mixins": [
     "BasicLootBlockEntityMixin",
-    "ProcessingLootBlockEntityMixin"
+    "ProcessingLootBlockEntityMixin",
+    "ProcessingContainerBlockEntityMixin",
+    "MicrowaveBlockEntityMixin",
+    "StoveBlockEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

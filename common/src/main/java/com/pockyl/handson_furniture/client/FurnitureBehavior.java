@@ -10,6 +10,8 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
+import com.mrcrayfish.furniture.refurbished.blockentity.MicrowaveBlockEntity;
+
 import com.pockyl.diegesis.api.client.NodeView;
 import com.pockyl.diegesis.api.client.StationBehavior;
 import com.pockyl.diegesis.api.client.StationView;
@@ -71,40 +73,73 @@ final class FurnitureBehavior implements StationBehavior {
         }
     }
 
+    /** How a part moves: a door swings about its upright hinge, a lid lifts about the hinge along its back, a drawer slides. */
+    enum Way {
+        SWING, LIFT, SLIDE
+    }
+
     /**
      * A part that moves: the scene node, the model of each variant ({@code <variant>_<model>}), and how far it goes when open,
-     * degrees about its hinge for a door, pixels along z for a drawer. With {@code hinge} it shows only on blocks whose
+     * degrees about its hinge for a door or a lid, pixels along z for a drawer. With {@code hinge} it shows only on blocks whose
      * {@code hinge} property has that value. {@code surfaces} are the places of the scene's {@code placing} that are on the
      * part: what stands there goes along. They are written where the part stands open, or with {@code writtenShut} where it is
      * shut (a door that stops part way open turns its shelves askew, and a surface is written square). {@code pivot} is the
      * hinge in station pixels. {@code control} opens it ({@link Furniture#OPEN} unless the piece has more than one); {@code follow}
      * is how far the camera goes along while it is open, station pixels.
      */
-    record Part(String node, String model, float open, boolean slides, String hinge, int[] surfaces, Vector3f pivot, boolean writtenShut,
+    record Part(String node, String model, float open, Way way, String hinge, int[] surfaces, Vector3f pivot, boolean writtenShut,
             String control, Vector3f follow) {
         /** A door whose shelves the scene writes where the shut door has them. */
         static Part door(String node, String model, float degrees, Vector3f pivot, int... surfaces) {
-            return new Part(node, model, degrees, false, null, surfaces, pivot, true, Furniture.OPEN, new Vector3f());
+            return new Part(node, model, degrees, Way.SWING, null, surfaces, pivot, true, Furniture.OPEN, new Vector3f());
         }
 
         static Part hinged(String node, String model, float degrees, String hinge) {
-            return new Part(node, model, degrees, false, hinge, new int[0], new Vector3f(), true, Furniture.OPEN, new Vector3f());
+            return new Part(node, model, degrees, Way.SWING, hinge, new int[0], new Vector3f(), true, Furniture.OPEN, new Vector3f());
+        }
+
+        /** A lid lifted by its front edge, {@code degrees} up about the hinge along its back. */
+        static Part lid(String node, String model, float degrees) {
+            return new Part(node, model, degrees, Way.LIFT, null, new int[0], new Vector3f(), true, Furniture.OPEN, new Vector3f());
         }
 
         /** A drawer; the camera goes along with it by {@code follow}. */
         static Part drawer(String node, String model, float pixels, String control, Vector3f follow, int... surfaces) {
-            return new Part(node, model, pixels, true, null, surfaces, new Vector3f(), false, control, follow);
+            return new Part(node, model, pixels, Way.SLIDE, null, surfaces, new Vector3f(), false, control, follow);
         }
 
         /** How what stands on the part moves from where the scene writes it to where the part is now. */
         Matrix4f move(float eased) {
             float left = writtenShut ? open * eased : open * (eased - 1.0F);
-            if (slides) {
+            if (way == Way.SLIDE) {
                 return new Matrix4f().translation(0.0F, 0.0F, left);
             }
-            return new Matrix4f().translation(pivot).rotateY((float) Math.toRadians(left)).translate(-pivot.x(), -pivot.y(), -pivot.z());
+            Matrix4f turned = new Matrix4f().translation(pivot);
+            float radians = (float) Math.toRadians(left);
+            if (way == Way.LIFT) {
+                turned.rotateX(radians);
+            } else {
+                turned.rotateY(radians);
+            }
+            return turned.translate(-pivot.x(), -pivot.y(), -pivot.z());
         }
     }
+
+    /**
+     * A microwave's turning plate: the scene node, the surface of the scene's {@code placing} that lies on it (what stands
+     * there turns along), the middle it turns about in station pixels, and how fast it turns while the microwave heats.
+     */
+    record Turntable(String node, int surface, Vector3f center, float degreesPerSecond) {
+    }
+
+    /** The freezer's switch plate: it stays still while the key on it rocks. */
+    private static final String POWER_PLATE = "power_plate";
+    /** The microwave's green lamp: it glows while the microwave is switched on. */
+    private static final String LAMP = "lamp";
+    /** The oven's heating element: dark iron while the stove is off, glowing while it is lit. */
+    private static final String ELEMENT = "element";
+    /** The element unlit: its red darkened to the iron of a cold coil. */
+    private static final int COLD = 0xFF4A4448;
 
     /** The middle of the block across, scene pixels: the plane the camera is mirrored across. */
     private static final float MIDDLE = 8.0F;
@@ -166,6 +201,12 @@ final class FurnitureBehavior implements StationBehavior {
     private final Furniture furniture;
     private final List<Part> parts;
     private final Motion motion;
+    /** The microwave's plate, null for the rest. */
+    private final Turntable turntable;
+    /** Where the plate stands, degrees: it stops where it is when the heating stops. */
+    private float plateAngle;
+    /** Whether the oven's element was last drawn glowing; null before it is first drawn. */
+    private Boolean elementLit;
     /** Per control, how its door or drawer moves (a cabinet's two hinged doors are one: only one of them shows). */
     private final Map<String, Swing> swings = new LinkedHashMap<>();
     /** The control whose door or drawer the camera goes with: the one opened last. */
@@ -173,10 +214,11 @@ final class FurnitureBehavior implements StationBehavior {
     private String variant;
     private BlockState shownFor;
 
-    FurnitureBehavior(Furniture furniture, List<Part> parts, Motion motion) {
+    FurnitureBehavior(Furniture furniture, List<Part> parts, Motion motion, Turntable turntable) {
         this.furniture = furniture;
         this.parts = parts;
         this.motion = motion;
+        this.turntable = turntable;
         for (Part part : parts) {
             swings.computeIfAbsent(part.control(), control -> new Swing());
         }
@@ -216,11 +258,17 @@ final class FurnitureBehavior implements StationBehavior {
         }
     }
 
-    /** The scene stands in for the block while a door is open, or still on the way back: a door left open stays open. */
+    /**
+     * The scene stands in for the block while a door is open, or still on the way back: a door left open stays open. A piece
+     * with a window always: what it holds is seen through the glass, and its switch or knob stands on it.
+     */
     @Override
     public boolean holdsBlock(StationView view) {
         if (view.isInUse()) {
             return false;
+        }
+        if (furniture.hasWindow() && variant != null) {
+            return true;
         }
         for (Map.Entry<String, Swing> entry : swings.entrySet()) {
             if (entry.getValue().showsInside() || isOpen(view, entry.getKey())) {
@@ -278,9 +326,19 @@ final class FurnitureBehavior implements StationBehavior {
         }
         boolean shown = view.isBlockHidden() && variant != null;
         view.node("body").ifPresent(node -> node.setVisible(shown));
-        // What stands inside is seen, and can be reached, only while a door is open or on its way; each drawer's own only
-        // while that drawer is.
-        view.setPlacingVisible(shown && anyInside);
+        // What stands inside is seen, and can be reached, only while a door is open or on its way (behind a window also while
+        // it is shut: the shut door is in the way of the hand); each drawer's own only while that drawer is.
+        view.setPlacingVisible(shown && (anyInside || furniture.hasWindow()));
+        view.setPlacingReachable(anyInside);
+        // The freezer's power switch is inside, on its wall; the microwave's and the stove's are outside, on their fronts.
+        boolean powerShown = furniture == Furniture.FREEZER ? shown && anyInside : shown;
+        view.node(Furniture.POWER).ifPresent(node -> node.setVisible(powerShown));
+        view.node(POWER_PLATE).ifPresent(node -> node.setVisible(powerShown));
+        view.node(ELEMENT).ifPresent(node -> node.setVisible(shown));
+        view.node(LAMP).ifPresent(node -> node.setVisible(shown && isOpen(view, Furniture.POWER)));
+        if (turntable != null) {
+            turn(view, dt, shown);
+        }
         Vector3f camera = new Vector3f();
         for (Part part : parts) {
             Swing swing = swings.get(part.control());
@@ -288,10 +346,10 @@ final class FurnitureBehavior implements StationBehavior {
             boolean fits = fits(state, part);
             view.node(part.node()).ifPresent(node -> {
                 node.setVisible(shown && fits);
-                if (part.slides()) {
-                    node.moveTo(0.0F, 0.0F, part.open() * eased, 0.0F);
-                } else {
-                    node.rotateTo(0.0F, part.open() * eased, 0.0F, 0.0F);
+                switch (part.way()) {
+                    case SLIDE -> node.moveTo(0.0F, 0.0F, part.open() * eased, 0.0F);
+                    case LIFT -> node.rotateTo(part.open() * eased, 0.0F, 0.0F, 0.0F);
+                    case SWING -> node.rotateTo(0.0F, part.open() * eased, 0.0F, 0.0F);
                 }
             });
             if (part.surfaces().length > 0) {
@@ -309,6 +367,36 @@ final class FurnitureBehavior implements StationBehavior {
         view.moveCamera(camera.x, camera.y, camera.z);
     }
 
+    /**
+     * Turns the microwave's plate while it heats (on, with power, something in it that heats), and what stands on the plate with
+     * it, as Refurbished's microwave hums while it heats.
+     */
+    private void turn(StationView view, float dt, boolean shown) {
+        boolean heating = view.level().getBlockEntity(view.pos()) instanceof MicrowaveBlockEntity microwave && microwave.canPlayAudio();
+        if (heating) {
+            plateAngle = (plateAngle + dt * turntable.degreesPerSecond()) % 360.0F;
+        }
+        view.node(turntable.node()).ifPresent(node -> {
+            node.setVisible(shown);
+            node.rotateTo(0.0F, plateAngle, 0.0F, 0.0F);
+        });
+        Vector3f center = turntable.center();
+        view.setSurfaceTransform(turntable.surface(), new Matrix4f().translation(center).rotateY((float) Math.toRadians(plateAngle))
+                .translate(-center.x(), -center.y(), -center.z()));
+    }
+
+    /** The oven's element glows while the stove is lit (switched on, with power), as Refurbished's own state says. */
+    private void dressElement(StationView view, BlockState state) {
+        boolean lit = flag(state, "lit");
+        if (elementLit != null && elementLit == lit) {
+            return;
+        }
+        elementLit = lit;
+        view.node(ELEMENT).ifPresent(node -> node.definition().visual().ifPresent(drawn -> node.setVisual(new Visual(drawn.model(),
+                drawn.mesh(), drawn.texture(), drawn.item(), drawn.block(), drawn.anchor(), lit ? Visual.WHITE : COLD, false, lit, false,
+                0.0F, !lit))));
+    }
+
     /** Gives the body and the moving parts the models of the block's variant (its wood, colour or finish). */
     private void dress(StationView view) {
         BlockState state = view.level().getBlockState(view.pos());
@@ -322,11 +410,15 @@ final class FurnitureBehavior implements StationBehavior {
         String hinge = hinge(state);
         // The scene's camera looks in past a door hung on the left; a door on the right has it from the other side.
         view.mirrorCamera("right".equals(hinge) ? MIDDLE : Float.NaN);
-        String body = variant + "_body" + (hinge != null ? "_" + hinge : "");
+        String body = variant + "_body" + (hinge != null ? "_" + hinge : row(state));
         view.node("body").ifPresent(node -> node.setVisual(model(body, node)));
         for (Part part : parts) {
             view.node(part.node()).ifPresent(node -> node.setVisual(model(variant + "_" + part.model(), node)));
         }
+        // The switch or knob in the finish of the piece, light or dark.
+        view.node(Furniture.POWER).ifPresent(node -> node.setVisual(model(variant + "_power", node)));
+        view.node(POWER_PLATE).ifPresent(node -> node.setVisual(model(variant + "_power_plate", node)));
+        dressElement(view, state);
     }
 
     private static boolean fits(BlockState state, Part part) {
@@ -335,6 +427,26 @@ final class FurnitureBehavior implements StationBehavior {
         }
         String hinge = hinge(state);
         return part.hinge().equals(hinge != null ? hinge : "left");
+    }
+
+    /**
+     * Where a piece that joins its neighbours (a chest of drawers) stands in its row, as Refurbished names its tops: {@code _left}
+     * with one beside it on the left only, {@code _right} on the right only, {@code _middle} on both; empty when alone or for
+     * blocks without the {@code left} and {@code right} properties.
+     */
+    private static String row(BlockState state) {
+        boolean left = flag(state, "left");
+        boolean right = flag(state, "right");
+        return left && right ? "_middle" : left ? "_left" : right ? "_right" : "";
+    }
+
+    private static boolean flag(BlockState state, String name) {
+        for (Property<?> property : state.getProperties()) {
+            if (name.equals(property.getName()) && state.getValue(property) instanceof Boolean value) {
+                return value;
+            }
+        }
+        return false;
     }
 
     /** The side a door hangs on ({@code left} or {@code right}), for blocks that have it; null otherwise. */

@@ -8,6 +8,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
 import com.mrcrayfish.furniture.refurbished.blockentity.BasicLootBlockEntity;
+import com.mrcrayfish.furniture.refurbished.blockentity.IHomeControlDevice;
+import com.mrcrayfish.furniture.refurbished.blockentity.StoveBlockEntity;
 
 import com.pockyl.diegesis.api.state.SlotRef;
 import com.pockyl.diegesis.api.state.SlotStorage;
@@ -46,13 +48,47 @@ public final class StorageLogic implements StationLogic {
         } else {
             size = 0;
         }
+        showPower(station);
+    }
+
+    /** The power switch follows the furniture: it may have been switched elsewhere (Refurbished's home computer). */
+    @Override
+    public void tick(StationContext station) {
+        showPower(station);
+    }
+
+    /**
+     * The player flips the power switch: the furniture itself is switched, as its menu's power button does. The stove's own
+     * button also lights its hob, so it is pressed as that button.
+     */
+    @Override
+    public void onControlChanged(StationContext station, Player player, String control, float value) {
+        if (Furniture.POWER.equals(control) && station.blockEntity() instanceof IHomeControlDevice device) {
+            boolean on = value > 0.5F;
+            if (device.isDeviceEnabled() != on) {
+                if (device instanceof StoveBlockEntity stove) {
+                    stove.togglePower();
+                } else {
+                    device.setDeviceState(on);
+                }
+            }
+        }
+    }
+
+    private static void showPower(StationContext station) {
+        if (station.state().schema().controls().containsKey(Furniture.POWER) && station.blockEntity() instanceof IHomeControlDevice device) {
+            float shown = device.isDeviceEnabled() ? 1.0F : 0.0F;
+            if (station.state().getControl(Furniture.POWER) != shown) {
+                station.state().setControl(Furniture.POWER, shown);
+            }
+        }
     }
 
     @Override
     public void onCustomAction(StationContext station, Player player, String action, CompoundTag data) {
         if (DOOR.equals(action)) {
             String control = data.contains(CONTROL) ? data.getString(CONTROL) : Furniture.OPEN;
-            if (station.state().schema().controls().containsKey(control)) {
+            if (!Furniture.POWER.equals(control) && station.state().schema().controls().containsKey(control)) {
                 toggleDoor(station, control);
             }
             return;
@@ -98,7 +134,7 @@ public final class StorageLogic implements StationLogic {
 
     private static boolean anyOpen(StationContext station) {
         for (String control : station.state().schema().controls().keySet()) {
-            if (station.state().getControl(control) > 0.5F) {
+            if (!Furniture.POWER.equals(control) && station.state().getControl(control) > 0.5F) {
                 return true;
             }
         }

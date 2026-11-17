@@ -1,0 +1,114 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Pocky-l/diegesis/main/docs/schema/scene.schema.json",
+  "$comment": "Refurbished's cooler, front to -z here (its facing names its back). The block is swapped for body (the box, hollowed out: a floor and four walls with Refurbished's own outsides) and lid, Refurbished's own boxes and textures turned round. The lid hangs on the line along its back where Refurbished hinges it (y 9, z 13 here); code lifts it about that line. A click on the lid opens or shuts it. Items lie anywhere on the floor between the walls, which keep them in. The camera stands at the front right, three-quarters, steep (64 degrees) so the whole floor shows over the front wall, with the open lid in frame behind the box.",
+  "work_plane": 8,
+  "idle_visible": true,
+  "camera": {
+    "position": [
+      -5.1,
+      58.3,
+      -10.1
+    ],
+    "target": [
+      9,
+      8,
+      10
+    ],
+    "fov": 32,
+    "interactive_at": 0.6
+  },
+  "interface": {
+    "hide_player": true,
+    "inventory_panel": false,
+    "highlight_color": "#26FFFFFF",
+    "counts_on_top": true
+  },
+  "inventory_drawer": {
+    "layout": "hotbar",
+    "always_open": true,
+    "carry_size": 3.2
+  },
+  "placing": {
+    "group": "items",
+    "item_size": 3.0,
+    "scale_range": [
+      0.5,
+      1.6
+    ],
+    "counts": "hover",
+    "physics": {},
+    "light_color": "#00FFC888",
+    "surfaces": [
+      {
+        "from": [
+          2,
+          4
+        ],
+        "to": [
+          14,
+          12
+        ],
+        "height": 1,
+        "clearance": 8,
+        "wall": 12
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "pos": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "pickable": false,
+      "hidden": true,
+      "visual": {
+        "model": "handson_furniture:diegesis/cooler/white_body",
+        "lit_as_block": true
+      }
+    },
+    {
+      "id": "lid",
+      "pos": [
+        8,
+        9,
+        13
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "pickable": true,
+      "collider": {
+        "from": [
+          -7,
+          0,
+          0
+        ],
+        "to": [
+          7,
+          1,
+          10
+        ]
+      },
+      "hidden": true,
+      "visual": {
+        "model": "handson_furniture:diegesis/cooler/white_lid",
+        "lit_as_block": true,
+        "anchor": [
+          8,
+          9,
+          3
+        ]
+      }
+    }
+  ]
+}

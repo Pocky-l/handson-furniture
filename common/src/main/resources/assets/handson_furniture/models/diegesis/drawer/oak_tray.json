@@ -1,0 +1,7 @@
+{
+  "parent": "handson_furniture:diegesis/drawer/tray",
+  "textures": {
+    "particle": "refurbished_furniture:block/oak_particle",
+    "texture": "refurbished_furniture:block/oak_drawer"
+  }
+}

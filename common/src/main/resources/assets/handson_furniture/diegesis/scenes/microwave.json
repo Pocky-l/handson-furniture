@@ -1,0 +1,197 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Pocky-l/diegesis/main/docs/schema/scene.schema.json",
+  "$comment": "Refurbished's microwave, front to -z here (its facing names its back). The block is swapped for body (the microwave with the cavity behind its door hollowed out: dark walls, a light rim; the control panel as Refurbished has it), door and plate, Refurbished's own boxes and textures turned round; the plate is ours, in the cream of Refurbished's plate. The door hangs on the viewer's left at its outer front corner (x 15, z 3), as a microwave's does; code swings it open. A click on the door opens or shuts it. Its window is clear: the inside shows through it. Items stand on the plate, which code turns while the microwave heats, and what stands on it turns along. The power switch (Refurbished's own on and off, its menu's power button) is a rocker key on the control panel, standing where Refurbished draws its button, bound to the control power; while it is on, the panel's green lamp (lamp, ours) glows. The camera stands at the front right, three-quarters and above, the open door in the shot on the left and the plate in the middle.",
+  "work_plane": 8,
+  "idle_visible": true,
+  "camera": {
+    "position": [
+      -5,
+      24.8,
+      -31.7
+    ],
+    "target": [
+      11,
+      3,
+      8
+    ],
+    "fov": 32,
+    "interactive_at": 0.6
+  },
+  "interface": {
+    "hide_player": true,
+    "inventory_panel": false,
+    "highlight_color": "#26FFFFFF",
+    "counts_on_top": true
+  },
+  "inventory_drawer": {
+    "layout": "hotbar",
+    "always_open": true,
+    "carry_size": 3.2
+  },
+  "placing": {
+    "group": "items",
+    "item_size": 2.5,
+    "scale_range": [
+      0.5,
+      1.6
+    ],
+    "counts": "hover",
+    "physics": {},
+    "light_color": "#00FFC888",
+    "surfaces": [
+      {
+        "from": [
+          7,
+          6
+        ],
+        "to": [
+          13,
+          12
+        ],
+        "height": 2,
+        "clearance": 6,
+        "aim_height": 2,
+        "wall": 12
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "pos": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "pickable": false,
+      "hidden": true,
+      "visual": {
+        "model": "handson_furniture:diegesis/microwave/light_body",
+        "lit_as_block": true
+      }
+    },
+    {
+      "id": "door",
+      "pos": [
+        15,
+        0,
+        3
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "pickable": true,
+      "collider": {
+        "from": [
+          0,
+          0,
+          -2
+        ],
+        "to": [
+          10,
+          9,
+          1
+        ]
+      },
+      "hidden": true,
+      "visual": {
+        "model": "handson_furniture:diegesis/microwave/light_door",
+        "lit_as_block": true,
+        "anchor": [
+          1,
+          0,
+          13
+        ]
+      }
+    },
+    {
+      "id": "plate",
+      "pos": [
+        10,
+        0,
+        9
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "pickable": false,
+      "hidden": true,
+      "visual": {
+        "model": "handson_furniture:diegesis/microwave/plate",
+        "lit_as_block": true,
+        "anchor": [
+          6,
+          0,
+          7
+        ]
+      }
+    },
+    {
+      "id": "power",
+      "pos": [
+        3,
+        1,
+        3
+      ],
+      "hidden": true,
+      "collider": {
+        "from": [
+          -1.5,
+          -0.5,
+          -1.5
+        ],
+        "to": [
+          1.5,
+          3.5,
+          0
+        ]
+      },
+      "visual": {
+        "model": "handson_furniture:diegesis/microwave/light_power",
+        "lit_as_block": true
+      },
+      "control": {
+        "control": "power",
+        "type": "toggle",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range": [
+          -15,
+          15
+        ],
+        "pivot": [
+          0,
+          1.5,
+          0
+        ]
+      }
+    },
+    {
+      "id": "lamp",
+      "pos": [
+        3,
+        5,
+        2.9
+      ],
+      "hidden": true,
+      "pickable": false,
+      "visual": {
+        "model": "handson_furniture:diegesis/microwave/lamp",
+        "tint": "#FF5CF08A",
+        "emissive": true
+      }
+    }
+  ]
+}

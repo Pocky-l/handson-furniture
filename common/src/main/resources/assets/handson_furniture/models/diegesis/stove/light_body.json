@@ -1,0 +1,7 @@
+{
+  "parent": "handson_furniture:diegesis/stove/body",
+  "textures": {
+    "particle": "refurbished_furniture:block/light_particle",
+    "texture": "refurbished_furniture:block/light_stove"
+  }
+}

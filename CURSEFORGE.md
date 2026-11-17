@@ -21,6 +21,9 @@
 <p style="text-align:center"><img src="https://raw.githubusercontent.com/Pocky-l/handson-furniture/main/docs/showcase/drawer.gif" width="720" alt="Birch logs pushed into a row in a kitchen drawer, then the lower drawer pulled out and back"></p>
 <p style="text-align:center"><em>A kitchen drawer has an upper and a lower drawer, each pulled out on its own, and the camera follows the one you pull.<br>A kitchen cabinet swings its door open on its hinge and is seen from the side the door leaves free.</em></p>
 
+<h2 style="text-align:center"><span style="color:#e0884a">The microwave and the oven</span></h2>
+<p style="text-align:center"><em>Things stand on the microwave's plate. Flip the switch on its panel and the plate turns while it heats, with what stands on it.<br>The stove's oven door comes down level, with a floor and a rack inside. Turn the knob on the hob and the element at the back glows:<br>with power, the oven bakes three things at a time, wherever they stand.</em></p>
+
 <h2 style="text-align:center"><span style="color:#e0884a">Put things anywhere</span></h2>
 <p style="text-align:center"><em>Things stand where you put them. The mouse wheel turns them, with Shift it tilts them and with Control it makes them bigger or smaller,<br>and pointing at the top of a thing puts the next one on it. What you carry rises onto things and never knocks them over.</em></p>
 

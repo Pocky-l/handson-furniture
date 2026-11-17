@@ -1,0 +1,7 @@
+{
+  "parent": "handson_furniture:diegesis/freezer/power_plate",
+  "textures": {
+    "particle": "refurbished_furniture:block/dark_particle",
+    "texture": "handson_furniture:block/dark_appliance_controls"
+  }
+}

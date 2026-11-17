@@ -5,7 +5,10 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "BasicLootBlockEntityMixin",
-    "ProcessingLootBlockEntityMixin"
+    "ProcessingLootBlockEntityMixin",
+    "ProcessingContainerBlockEntityMixin",
+    "MicrowaveBlockEntityMixin",
+    "StoveBlockEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

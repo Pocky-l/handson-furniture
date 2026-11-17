@@ -39,6 +39,15 @@
         "H002"
       ],
       "reason": "the shell is inflated 0.03 so its sides cover the shut drawers' sides (they flickered); its top reaches 0.03 into the top's band, a joint of one wall seen as one"
+    },
+    {
+      "model": "handson_furniture:diegesis/cooler/*",
+      "element": "*",
+      "face": "*",
+      "flags": [
+        "T004"
+      ],
+      "reason": "Refurbished's cooler sheet is 64x32: its UVs are 4 texels a unit across and 2 down, the same density as the faces"
     }
   ]
 }

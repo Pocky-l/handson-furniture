@@ -50,6 +50,41 @@ public final class ModGameTests {
     }
 
     @GameTest(template = "empty")
+    public static void aCoolersLidLiftsAndItHoldsMoreThanARow(GameTestHelper helper) {
+        FurnitureTests.aCoolersLidLiftsAndItHoldsMoreThanARow(helper);
+    }
+
+    @GameTest(template = "empty")
+    public static void theWrenchUsesTheBlockAsBefore(GameTestHelper helper) {
+        FurnitureTests.theWrenchUsesTheBlockAsBefore(helper);
+    }
+
+    @GameTest(template = "empty")
+    public static void whatFreezesGoesWhereTheFreezerFreezes(GameTestHelper helper) {
+        FurnitureTests.whatFreezesGoesWhereTheFreezerFreezes(helper);
+    }
+
+    @GameTest(template = "empty")
+    public static void theFreezersSwitchIsItsPower(GameTestHelper helper) {
+        FurnitureTests.theFreezersSwitchIsItsPower(helper);
+    }
+
+    @GameTest(template = "empty")
+    public static void whatHeatsGoesWhereTheMicrowaveHeats(GameTestHelper helper) {
+        FurnitureTests.whatHeatsGoesWhereTheMicrowaveHeats(helper);
+    }
+
+    @GameTest(template = "empty")
+    public static void threeThingsBakeAtOnceInTheOven(GameTestHelper helper) {
+        FurnitureTests.threeThingsBakeAtOnceInTheOven(helper);
+    }
+
+    @GameTest(template = "empty")
+    public static void theStovesKnobIsItsPower(GameTestHelper helper) {
+        FurnitureTests.theStovesKnobIsItsPower(helper);
+    }
+
+    @GameTest(template = "empty")
     public static void clientsAreToldOfAnOpenDoor(GameTestHelper helper) {
         FurnitureTests.clientsAreToldOfAnOpenDoor(helper);
     }

@@ -15,10 +15,22 @@ KITCHEN = ['oak', 'spruce', 'birch', 'jungle', 'acacia', 'dark_oak', 'mangrove',
 # furniture: (variants, Refurbished's texture name after the variant, the parts)
 FURNITURE = {
     'fridge': (['light', 'dark'], 'fridge', ['body', 'door']),
-    'freezer': (['light', 'dark'], 'fridge', ['body', 'door']),
+    'freezer': (['light', 'dark'], 'fridge', ['body', 'door', 'power', 'power_plate']),
     'kitchen_cabinet': (KITCHEN, 'kitchen_storage_cabinet', ['body_left', 'body_right', 'door_left', 'door_right']),
     'kitchen_drawer': (KITCHEN, 'kitchen_drawer', ['body', 'tray', 'tray_lower']),
+    'cooler': (KITCHEN[10:], 'cooler', ['body', 'lid']),
+    'storage_cabinet': (KITCHEN[:10], 'storage_cabinet', ['body_left', 'body_right', 'door_left', 'door_right']),
+    'drawer': (KITCHEN[:10], 'drawer', ['body', 'body_left', 'body_middle', 'body_right', 'tray', 'tray_lower']),
+    'microwave': (['light', 'dark'], 'microwave', ['body', 'door', 'power']),
+    'stove': (['light', 'dark'], 'stove', ['body', 'door', 'power']),
 }
+
+# Parts drawn in a sheet of ours, one per finish, instead of Refurbished's sheet of the variant: the appliances' controls.
+OWN_SHEETS = {'power': 'handson_furniture:block/{variant}_appliance_controls',
+              'power_plate': 'handson_furniture:block/{variant}_appliance_controls'}
+
+# Parts that are the same on every variant (ours, in a texture of their own): kept as they are, no variant models.
+SHARED = {'microwave': ['plate', 'lamp'], 'stove': ['element']}
 
 
 def main():
@@ -26,7 +38,7 @@ def main():
     for furniture, (variants, texture, parts) in FURNITURE.items():
         folder = MODELS / furniture
         for old in folder.glob('*.json'):
-            if old.stem not in parts:
+            if old.stem not in parts and old.stem not in SHARED.get(furniture, []):
                 old.unlink()
         for variant in variants:
             for part in parts:
@@ -34,7 +46,8 @@ def main():
                     'parent': f'handson_furniture:diegesis/{furniture}/{part}',
                     'textures': {
                         'particle': f'refurbished_furniture:block/{variant}_particle',
-                        'texture': f'refurbished_furniture:block/{variant}_{texture}',
+                        'texture': OWN_SHEETS[part].format(variant=variant) if part in OWN_SHEETS
+                        else f'refurbished_furniture:block/{variant}_{texture}',
                     },
                 }
                 (folder / f'{variant}_{part}.json').write_text(json.dumps(model, indent=2) + '\n', encoding='utf-8', newline='\n')

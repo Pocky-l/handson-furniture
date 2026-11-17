@@ -8,7 +8,9 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -17,6 +19,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Quaternionf;
+
+import com.mrcrayfish.furniture.refurbished.blockentity.IHomeControlDevice;
+import com.mrcrayfish.furniture.refurbished.blockentity.ProcessingContainerBlockEntity;
 
 import com.pockyl.diegesis.api.Diegesis;
 import com.pockyl.diegesis.api.state.ItemPose;
@@ -28,6 +33,7 @@ import com.pockyl.diegesis.api.station.StationType;
 import com.pockyl.diegesis.impl.action.ActionHandler;
 import com.pockyl.diegesis.impl.action.StationAction;
 import com.pockyl.handson_furniture.Furniture;
+import com.pockyl.handson_furniture.station.ProcessingSlots;
 import com.pockyl.handson_furniture.station.StorageLogic;
 
 import java.util.ArrayList;
@@ -143,22 +149,176 @@ public final class FurnitureTests {
         helper.succeed();
     }
 
-    /** The kitchen drawer's two drawers open on their own; the block shows open while either is. */
+    /** A kitchen drawer's and a chest of drawers' two drawers open on their own; the block shows open while either is. */
     public static void theTwoDrawersOpenOnTheirOwn(GameTestHelper helper) {
-        TestStation station = place(helper, Furniture.KITCHEN_DRAWER);
+        for (Furniture furniture : List.of(Furniture.KITCHEN_DRAWER, Furniture.DRAWER)) {
+            TestStation station = place(helper, furniture);
+            StorageLogic logic = new StorageLogic(station);
+            Player player = helper.makeMockPlayer(GameType.CREATIVE);
+            CompoundTag lower = new CompoundTag();
+            lower.putString(StorageLogic.CONTROL, Furniture.OPEN_LOWER);
+            logic.onCustomAction(station, player, StorageLogic.DOOR, lower);
+            helper.assertTrue(station.state().getControl(Furniture.OPEN_LOWER) == 1.0F && station.state().getControl(Furniture.OPEN) == 0.0F,
+                    furniture + ": a click on the lower drawer pulls out that one only");
+            helper.assertTrue(isOpenBlock(station), "and the drawer shows open");
+            logic.onCustomAction(station, player, StorageLogic.DOOR, new CompoundTag());
+            logic.onCustomAction(station, player, StorageLogic.DOOR, lower);
+            helper.assertTrue(station.state().getControl(Furniture.OPEN) == 1.0F && isOpenBlock(station), "the upper one out, it stays open");
+            logic.onCustomAction(station, player, StorageLogic.DOOR, new CompoundTag());
+            helper.assertTrue(!isOpenBlock(station), "both in, it is shut");
+        }
+        helper.succeed();
+    }
+
+    /** A cooler's lid lifts and drops as a door does, and the cooler holds more than its menu's one row. */
+    public static void aCoolersLidLiftsAndItHoldsMoreThanARow(GameTestHelper helper) {
+        TestStation station = place(helper, Furniture.COOLER);
         StorageLogic logic = new StorageLogic(station);
         Player player = helper.makeMockPlayer(GameType.CREATIVE);
-        CompoundTag lower = new CompoundTag();
-        lower.putString(StorageLogic.CONTROL, Furniture.OPEN_LOWER);
-        logic.onCustomAction(station, player, StorageLogic.DOOR, lower);
-        helper.assertTrue(station.state().getControl(Furniture.OPEN_LOWER) == 1.0F && station.state().getControl(Furniture.OPEN) == 0.0F,
-                "a click on the lower drawer pulls out that one only");
-        helper.assertTrue(isOpenBlock(station), "and the drawer shows open");
         logic.onCustomAction(station, player, StorageLogic.DOOR, new CompoundTag());
-        logic.onCustomAction(station, player, StorageLogic.DOOR, lower);
-        helper.assertTrue(station.state().getControl(Furniture.OPEN) == 1.0F && isOpenBlock(station), "the upper one out, it stays open");
+        helper.assertTrue(station.state().getControl(Furniture.OPEN) == 1.0F && isOpenBlock(station), "a click lifts the lid");
+        Container cooler = (Container) station.blockEntity();
+        for (int i = 0; i < 12; i++) {
+            player.getInventory().items.set(0, new ItemStack(i % 2 == 0 ? Items.MELON_SLICE : Items.COOKIE, 64));
+            CompoundTag data = new CompoundTag();
+            data.putInt(StorageLogic.SLOT, 0);
+            logic.onCustomAction(station, player, StorageLogic.STORE, data);
+        }
+        helper.assertTrue(cooler.getItem(11).getCount() == 64, "twelve stacks go in, past the menu's nine slots");
         logic.onCustomAction(station, player, StorageLogic.DOOR, new CompoundTag());
-        helper.assertTrue(!isOpenBlock(station), "both in, it is shut");
+        helper.assertTrue(station.state().getControl(Furniture.OPEN) == 0.0F && !isOpenBlock(station), "another click drops it shut");
+        helper.succeed();
+    }
+
+    /** Refurbished's wrench links the furniture to power: with it in hand, using the block does not open the station. */
+    public static void theWrenchUsesTheBlockAsBefore(GameTestHelper helper) {
+        TestStation station = place(helper, Furniture.FREEZER);
+        Player player = helper.makeMockPlayer(GameType.CREATIVE);
+        StationType.OpenCondition condition = Furniture.FREEZER.type().openCondition();
+        helper.assertTrue(condition.test(player, station.pos(), station.blockState()), "an empty hand opens the freezer");
+        Item wrench = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(Furniture.REFURBISHED, "wrench"));
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(wrench));
+        helper.assertTrue(!condition.test(player, station.pos(), station.blockState()), "the wrench is left to link it");
+        helper.succeed();
+    }
+
+    /**
+     * Refurbished freezes the freezer's first slot into its second: what freezes is swapped into the first wherever it stands,
+     * keeping its place, and the second is cleared of what the result could not join.
+     */
+    public static void whatFreezesGoesWhereTheFreezerFreezes(GameTestHelper helper) {
+        TestStation station = place(helper, Furniture.FREEZER);
+        new StorageLogic(station);
+        ProcessingContainerBlockEntity freezer = (ProcessingContainerBlockEntity) station.blockEntity();
+        SlotRef first = SlotRef.of(Furniture.ITEMS, ProcessingSlots.FREEZER.input(0));
+        SlotRef second = SlotRef.of(Furniture.ITEMS, ProcessingSlots.FREEZER.output(0));
+        SlotRef far = SlotRef.of(Furniture.ITEMS, 30);
+        ItemPose shelf = new ItemPose(9.0F, 11.0F, 8.0F, 0.0F, new Quaternionf(), 1.0F, -1);
+        ItemPose floor = new ItemPose(3.0F, 1.0F, 5.0F, 0.0F, new Quaternionf(), 1.0F, -1);
+        station.state().setItem(first, new ItemStack(Items.APPLE, 4));
+        station.state().setPose(first, floor);
+        station.state().setItem(second, new ItemStack(Items.BREAD, 2));
+        station.state().setItem(far, new ItemStack(Items.ICE, 3));
+        station.state().setPose(far, shelf);
+        helper.assertTrue(ProcessingSlots.FREEZER.arrange(freezer), "the slots are set out");
+        helper.assertTrue(station.state().getItem(first).is(Items.ICE) && shelf.equals(station.state().getPose(first)),
+                "the ice is in the slot that freezes, still on the shelf");
+        helper.assertTrue(station.state().getItem(far).is(Items.APPLE) && floor.equals(station.state().getPose(far)),
+                "the apples took its slot and stayed on the floor");
+        helper.assertTrue(station.state().getItem(second).isEmpty(), "the bread left the slot the packed ice comes out into");
+        boolean breadKept = false;
+        for (int i = 2; i < Furniture.FREEZER.slots(); i++) {
+            breadKept |= station.state().getItem(SlotRef.of(Furniture.ITEMS, i)).is(Items.BREAD);
+        }
+        helper.assertTrue(breadKept, "and stays in the freezer");
+        station.state().setItem(second, new ItemStack(Items.PACKED_ICE, 2));
+        helper.assertTrue(!ProcessingSlots.FREEZER.arrange(freezer), "packed ice already out stays for more to join it, and for hoppers");
+        helper.succeed();
+    }
+
+    /** The freezer's switch is Refurbished's own on and off: flipping it switches the freezer, and it shows what the freezer is. */
+    public static void theFreezersSwitchIsItsPower(GameTestHelper helper) {
+        TestStation station = place(helper, Furniture.FREEZER);
+        StorageLogic logic = new StorageLogic(station);
+        IHomeControlDevice freezer = (IHomeControlDevice) station.blockEntity();
+        helper.assertTrue(!freezer.isDeviceEnabled() && station.state().getControl(Furniture.POWER) == 0.0F,
+                "a new freezer is off, as Refurbished makes it, and its switch shows it");
+        Player player = helper.makeMockPlayer(GameType.CREATIVE);
+        station.state().setControl(Furniture.POWER, 1.0F);
+        logic.onControlChanged(station, player, Furniture.POWER, 1.0F);
+        helper.assertTrue(freezer.isDeviceEnabled(), "the switch turns it on");
+        helper.assertTrue(!isOpenBlock(station) && station.state().getControl(Furniture.OPEN) == 0.0F, "and opens no door");
+        freezer.setDeviceState(false);
+        logic.tick(station);
+        helper.assertTrue(station.state().getControl(Furniture.POWER) == 0.0F, "turned off elsewhere, the switch shows it");
+        helper.succeed();
+    }
+
+    /**
+     * The microwave heats its first slot into its second, as the freezer freezes: a potato standing anywhere on the plate goes
+     * into the slot that heats, keeping its place, and its switch is Refurbished's own on and off.
+     */
+    public static void whatHeatsGoesWhereTheMicrowaveHeats(GameTestHelper helper) {
+        TestStation station = place(helper, Furniture.MICROWAVE);
+        StorageLogic logic = new StorageLogic(station);
+        SlotRef first = SlotRef.of(Furniture.ITEMS, ProcessingSlots.MICROWAVE.input(0));
+        SlotRef far = SlotRef.of(Furniture.ITEMS, 9);
+        ItemPose plate = new ItemPose(11.0F, 2.0F, 8.0F, 0.0F, new Quaternionf(), 1.0F, -1);
+        station.state().setItem(first, new ItemStack(Items.APPLE));
+        station.state().setItem(far, new ItemStack(Items.POTATO, 2));
+        station.state().setPose(far, plate);
+        helper.assertTrue(ProcessingSlots.MICROWAVE.arrange(station.blockEntity()), "the slots are set out");
+        helper.assertTrue(station.state().getItem(first).is(Items.POTATO) && plate.equals(station.state().getPose(first)),
+                "the potato is in the slot that heats, where it stood");
+        helper.assertTrue(station.state().getItem(far).is(Items.APPLE), "and the apple waits in its slot");
+        IHomeControlDevice microwave = (IHomeControlDevice) station.blockEntity();
+        helper.assertTrue(!microwave.isDeviceEnabled(), "a new microwave is off");
+        station.state().setControl(Furniture.POWER, 1.0F);
+        logic.onControlChanged(station, helper.makeMockPlayer(GameType.CREATIVE), Furniture.POWER, 1.0F);
+        helper.assertTrue(microwave.isDeviceEnabled() && station.state().getControl(Furniture.OPEN) == 0.0F,
+                "the switch turns it on and opens no door");
+        helper.succeed();
+    }
+
+    /**
+     * The oven bakes three things at once, each of its first three slots into the one three further on: what bakes goes into
+     * them wherever it stands, and an output is cleared of what its bake could not join.
+     */
+    public static void threeThingsBakeAtOnceInTheOven(GameTestHelper helper) {
+        TestStation station = place(helper, Furniture.STOVE);
+        new StorageLogic(station);
+        for (int i = 0; i < 3; i++) {
+            SlotRef waiting = SlotRef.of(Furniture.ITEMS, 20 + i);
+            station.state().setItem(waiting, new ItemStack(Items.POTATO));
+            station.state().setPose(waiting, new ItemPose(3.0F + 4.0F * i, 7.0F, 9.0F, 0.0F, new Quaternionf(), 1.0F, -1));
+        }
+        SlotRef output = SlotRef.of(Furniture.ITEMS, ProcessingSlots.OVEN.output(1));
+        station.state().setItem(output, new ItemStack(Items.BREAD, 3));
+        helper.assertTrue(ProcessingSlots.OVEN.arrange(station.blockEntity()), "the slots are set out");
+        Container stove = (Container) station.blockEntity();
+        for (int i = 0; i < 3; i++) {
+            helper.assertTrue(stove.getItem(ProcessingSlots.OVEN.input(i)).is(Items.POTATO), "a potato bakes in space " + i);
+        }
+        helper.assertTrue(station.state().getItem(output).isEmpty(), "the bread left the slot a baked potato comes out into");
+        helper.assertTrue(!ProcessingSlots.OVEN.arrange(station.blockEntity()), "set out, the slots stay as they are");
+        helper.succeed();
+    }
+
+    /** The stove's knob is Refurbished's own on and off, as its menu's power button: the stove is switched with it. */
+    public static void theStovesKnobIsItsPower(GameTestHelper helper) {
+        TestStation station = place(helper, Furniture.STOVE);
+        StorageLogic logic = new StorageLogic(station);
+        IHomeControlDevice stove = (IHomeControlDevice) station.blockEntity();
+        helper.assertTrue(!stove.isDeviceEnabled() && station.state().getControl(Furniture.POWER) == 0.0F, "a new stove is off");
+        Player player = helper.makeMockPlayer(GameType.CREATIVE);
+        station.state().setControl(Furniture.POWER, 1.0F);
+        logic.onControlChanged(station, player, Furniture.POWER, 1.0F);
+        helper.assertTrue(stove.isDeviceEnabled(), "the knob turns it on");
+        station.state().setControl(Furniture.POWER, 0.0F);
+        logic.onControlChanged(station, player, Furniture.POWER, 0.0F);
+        helper.assertTrue(!stove.isDeviceEnabled(), "and off again");
+        logic.onCustomAction(station, player, StorageLogic.DOOR, new CompoundTag());
+        helper.assertTrue(station.state().getControl(Furniture.OPEN) == 1.0F && isOpenBlock(station), "a click lets the oven door down");
         helper.succeed();
     }
 

@@ -1,0 +1,7 @@
+{
+  "parent": "handson_furniture:diegesis/microwave/body",
+  "textures": {
+    "particle": "refurbished_furniture:block/light_particle",
+    "texture": "refurbished_furniture:block/light_microwave"
+  }
+}

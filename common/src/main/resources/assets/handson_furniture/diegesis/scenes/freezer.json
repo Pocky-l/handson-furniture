@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/Pocky-l/diegesis/main/docs/schema/scene.schema.json",
-  "$comment": "Refurbished's freezer, the lower block under its fridge, front to -z here (its facing names its back). Opened the same way as the fridge above it: the block is swapped for body (the freezer hollowed out, with two shelves) and door, both Refurbished's own boxes and textures turned round, the door hinged on the viewer's right where its back meets the front (x 0, z 3). A click on the door opens or shuts it. Its two slots (what freezes and what came out frozen, as Refurbished freezes them) stand anywhere on the floor, the shelves and in the door's bins. The camera faces it from the front, a little to the left and above, as one looks down at the lower half of a fridge.",
+  "$comment": "Refurbished's freezer, the lower block under its fridge, front to -z here (its facing names its back). Opened the same way as the fridge above it: the block is swapped for body (the freezer hollowed out, with two shelves) and door, both Refurbished's own boxes and textures turned round, the door hinged on the viewer's right where its back meets the front (x 0, z 3). A click on the door opens or shuts it. Its two slots (what freezes and what came out frozen, as Refurbished freezes them) stand anywhere on the floor, the shelves and in the door's bins. The camera faces it from the front, a little to the left and above, as one looks down at the lower half of a fridge. Its power switch (Refurbished's own on and off, the power button of its menu) is a rocker key on a plate (power_plate, which stays still) on the back wall of the top compartment, in its right corner, facing the door as a fridge's thermostat does, bound to the control power; the top shelf stops short of it.",
   "work_plane": 8,
   "idle_visible": true,
   "camera": {
@@ -75,7 +75,7 @@
       },
       {
         "from": [
-          1,
+          4,
           6
         ],
         "to": [
@@ -184,6 +184,73 @@
           16,
           0,
           13
+        ]
+      }
+    },
+    {
+      "id": "power_plate",
+      "pos": [
+        2.5,
+        11,
+        15
+      ],
+      "hidden": true,
+      "pickable": false,
+      "visual": {
+        "model": "handson_furniture:diegesis/freezer/light_power_plate",
+        "anchor": [
+          7.5,
+          0,
+          8
+        ],
+        "lit_as_block": true
+      }
+    },
+    {
+      "id": "power",
+      "pos": [
+        2.5,
+        11,
+        15
+      ],
+      "hidden": true,
+      "collider": {
+        "from": [
+          -1.5,
+          0,
+          -2
+        ],
+        "to": [
+          1.5,
+          4,
+          0
+        ]
+      },
+      "visual": {
+        "model": "handson_furniture:diegesis/freezer/light_power",
+        "anchor": [
+          7.5,
+          0,
+          8
+        ],
+        "lit_as_block": true
+      },
+      "control": {
+        "control": "power",
+        "type": "toggle",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range": [
+          -20,
+          20
+        ],
+        "pivot": [
+          0,
+          2,
+          -1
         ]
       }
     }

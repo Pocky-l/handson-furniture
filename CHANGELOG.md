@@ -1,7 +1,6 @@
 # Changelog
 
-## [1.1.0+1.21.1] - Unreleased
-
+## [1.1.0+1.21.1] - 2026-11-17
 - Coolers, storage cabinets and chests of drawers open by hand too, in every wood and colour, and hold more than their
   menus.
 - A cooler's lid swings up and rocks back onto its hinge, and what you put in lies on its floor where you set it.

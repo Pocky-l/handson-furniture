@@ -1,0 +1,69 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "minecraft:block/white_concrete",
+    "white_concrete": "minecraft:block/white_concrete"
+  },
+  "elements": [
+    {
+      "name": "light_cover",
+      "from": [
+        1,
+        9,
+        2
+      ],
+      "to": [
+        2,
+        11,
+        4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3,
+            8,
+            4,
+            10
+          ],
+          "texture": "#white_concrete"
+        },
+        "east": {
+          "uv": [
+            4,
+            8,
+            6,
+            10
+          ],
+          "texture": "#white_concrete"
+        },
+        "south": {
+          "uv": [
+            6,
+            8,
+            7,
+            10
+          ],
+          "texture": "#white_concrete"
+        },
+        "up": {
+          "uv": [
+            4,
+            6,
+            5,
+            8
+          ],
+          "texture": "#white_concrete"
+        },
+        "down": {
+          "uv": [
+            4,
+            10,
+            5,
+            12
+          ],
+          "texture": "#white_concrete"
+        }
+      }
+    }
+  ]
+}

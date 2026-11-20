@@ -1,0 +1,42 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "minecraft:block/magma",
+    "embers": "minecraft:block/magma"
+  },
+  "elements": [
+    {
+      "name": "embers",
+      "from": [
+        2,
+        5,
+        2
+      ],
+      "to": [
+        10,
+        6,
+        14
+      ],
+      "faces": {
+        "west": {
+          "uv": [
+            2,
+            14,
+            14,
+            15
+          ],
+          "texture": "#embers"
+        },
+        "up": {
+          "uv": [
+            4,
+            2,
+            12,
+            14
+          ],
+          "texture": "#embers"
+        }
+      }
+    }
+  ]
+}

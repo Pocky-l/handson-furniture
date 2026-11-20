@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.2.0+1.21.1] - Unreleased
+- Electricity generators open by hand: fuel goes on the grate behind the side panel, a key switches them on and the screen shows the fuel left.
+- Mail boxes open by hand: the front comes down on the mail lying inside, and letting it down checks the mail.
+- A microwave heats only with its door shut, beeps as it starts and switches itself off when everything is heated.
+- The fridge, microwave and oven light up inside and light the room around them.
+- A freezer, microwave or stove switched on without power now says so.
+- A right click puts one of the stack in your hand down; the rest stays in the hand.
+- Shift-clicked things go onto the middle of the microwave's plate and turn with it.
+- A cupboard, fridge or cooler no longer goes dark inside the moment you shut it: it shuts as its door meets the frame.
+- Flat things lie on their back in the kitchen drawer, chest of drawers and cooler, readable from above, and pile up.
+- Putting things in is calmer: piles move as one, things never pass through each other and flat things turn to any angle.
+- A lava bucket burnt in a generator leaves its empty bucket instead of losing it.
+- Players without this mod on a server with it can shift-click in the menus of the freezer, microwave, stove and generator again.
+- A comparator reads furniture as full when the slots of its menu are full, as without this mod.
+- Needs [Diegesis](https://www.curseforge.com/minecraft/mc-mods/diegesis) 1.0.0-beta.14.
+
 ## [1.1.0+1.21.1] - 2026-11-17
 - Coolers, storage cabinets and chests of drawers open by hand too, in every wood and colour, and hold more than their
   menus.

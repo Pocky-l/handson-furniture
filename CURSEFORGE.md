@@ -28,6 +28,12 @@
 <h2 style="text-align:center"><span style="color:#e0884a">The microwave and the oven</span></h2>
 <p style="text-align:center"><em>Things stand on the microwave's plate. Flip the switch on its panel and the plate turns while it heats, with what stands on it.<br>The stove's oven door comes down level, with a floor and a rack inside. Turn the knob on the hob and the element at the back glows:<br>with power, the oven bakes three things at a time, wherever they stand.</em></p>
 
+<h2 style="text-align:center"><span style="color:#e0884a">The electricity generator</span></h2>
+<p style="text-align:center"><em>Its side panel swings out on a firebox. Lay coal or any other fuel on the grate and press the key under the screen:<br>the embers glow while it burns one at a time, and the screen shows how much of the burning fuel is left.</em></p>
+
+<h2 style="text-align:center"><span style="color:#e0884a">The mail box</span></h2>
+<p style="text-align:center"><em>Its front comes down and the mail lies on the floor inside.<br>Letting the front down checks the mail: the flag goes down, as with Refurbished's menu.</em></p>
+
 <h2 style="text-align:center"><span style="color:#e0884a">Put things anywhere</span></h2>
 <p style="text-align:center"><em>Things stand where you put them. The mouse wheel turns them, with Shift it tilts them and with Control it makes them bigger or smaller,<br>and pointing at the top of a thing puts the next one on it. What you carry rises onto things and never knocks them over.</em></p>
 

@@ -14,7 +14,7 @@
 
 <p align="center"><i>Open your kitchen with your own hands.</i></p>
 
-<p align="center"><b>The fridge, the freezer, the kitchen cabinets and drawers, the storage cabinets, the chests of drawers, the coolers, the microwaves and the ovens of MrCrayfish's Furniture Mod: Refurbished open right where they stand, with no menu screen. Put your food on the shelves where you want it, turned and stacked as you like, and it stays there for everyone to see.</b></p>
+<p align="center"><b>The fridge, the freezer, the kitchen cabinets and drawers, the storage cabinets, the chests of drawers, the coolers, the microwaves, the ovens, the electricity generators and the mail boxes of MrCrayfish's Furniture Mod: Refurbished open right where they stand, with no menu screen. Put your food on the shelves where you want it, turned and stacked as you like, and it stays there for everyone to see.</b></p>
 
 <p align="center"><img src="docs/showcase/fridge.gif" alt="A fridge opened by hand and filled: a cake, a carrot, bamboo and eggs in the door, a second cake on the first" width="720"></p>
 
@@ -30,7 +30,8 @@ built on [Diegesis](https://www.curseforge.com/minecraft/mc-mods/diegesis), from
 ## Features
 
 - **Fridge.** Use it and its door comes unstuck from the seal and swings part way open. Food stands on its two shelves
-  and in the three bins of the door, and turns along with the door.
+  and in the three bins of the door, and turns along with the door. The light strip inside comes on as the door leaves the
+  seal, and an open fridge lights the kitchen.
 - **Freezer.** The lower block under the fridge opens the same way. Its power switch is inside: switch it on and it freezes
   what you put in, wherever it stands. W and S take you between the fridge and the freezer.
 - **Kitchen cabinets.** The door swings open on its hinge and the camera looks in from the side it leaves free.
@@ -39,10 +40,19 @@ built on [Diegesis](https://www.curseforge.com/minecraft/mc-mods/diegesis), from
 - **Storage cabinets.** The wooden cabinets open like the kitchen ones, with a shelf inside.
 - **Chests of drawers.** Both drawers pull out by hand, like the kitchen ones.
 - **Coolers.** Lift the lid and look down into the box: what you put in lies on its floor between the walls.
-- **Microwaves.** Things stand on the plate. Flip the switch on the panel and the plate turns while it heats, with what
-  stands on it; the window shows the inside with the door shut.
+- **Microwaves.** Shift-clicked food goes onto the middle of the plate. Flip the switch on the panel and the plate turns
+  while it heats, with what lies on it, lit by the lamp inside, and the kitchen glows through the window. Opened, it waits;
+  done, it beeps and switches itself off.
 - **Ovens.** The stove's oven door comes down level, with a floor and a rack inside. Turn the knob on the hob's rim: the
-  element at the back glows, and with power the oven bakes three things at a time, wherever they stand.
+  element at the back glows, the oven lamp lights the rack, and with power the oven bakes three things at a time, wherever
+  they stand.
+- **Electricity generators.** The side panel swings out on a firebox: lay coal or any other fuel on its grate. Press the
+  key under the screen and the embers glow while it burns one at a time; the screen shows how much of the burning fuel is left.
+- **Mail boxes.** The front comes down and the mail lies on the floor inside. Letting it down checks the mail: the flag
+  goes down, as with Refurbished's menu.
+- **Power.** As in Refurbished, the freezer, the microwave and the stove run on electricity: link them to an
+  [Electricity Generator](https://www.curseforge.com/minecraft/mc-mods/refurbished-furniture) with the wrench. Switched on
+  without power, they tell you so.
 - **Put things anywhere.** Things stand where you put them, turned and sized as you like, even on top of each other. They
   stay there, and every player sees them.
 - **Weight.** A stone block shoves an apple aside, an apple hardly moves the block. Things stop where they land, a block
@@ -61,6 +71,7 @@ built on [Diegesis](https://www.curseforge.com/minecraft/mc-mods/diegesis), from
 | Open the furniture | Right-click it |
 | Open or shut a door or drawer | Click it |
 | Put a stack in | Click it in your inventory, then the spot on a shelf |
+| Put one down | Right-click the spot, with the stack in your hand |
 | Put it on top of a thing | Point at the top of that thing |
 | Turn it | Mouse wheel; Shift + wheel tips it towards you |
 | Make it bigger or smaller | Control + wheel |

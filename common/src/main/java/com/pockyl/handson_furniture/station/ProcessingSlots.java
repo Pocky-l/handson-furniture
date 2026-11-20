@@ -11,6 +11,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+import com.mrcrayfish.furniture.refurbished.platform.Services;
+
 import com.pockyl.diegesis.api.state.ItemPose;
 import com.pockyl.diegesis.api.state.SlotRef;
 import com.pockyl.diegesis.api.state.StationHost;
@@ -22,7 +24,7 @@ import java.util.Optional;
 /**
  * Keeps Refurbished's processing working while things stand anywhere inside. Refurbished works on fixed slots: the freezer
  * freezes its first slot into its second, the microwave heats its first into its second, the oven bakes each of its first three
- * into the one three further on. Here a player puts things anywhere, so before each tick the slots are set out: something
+ * into the one three further on, the generator burns its first. Here a player puts things anywhere, so before each tick the slots are set out: something
  * the furniture can process goes into a free input, and an output is cleared of whatever its input's result could not join.
  * A swap takes the place along, so nothing moves where it stands. Hoppers and the menu of a player without the mod see the
  * furniture as Refurbished made it.
@@ -33,8 +35,11 @@ public enum ProcessingSlots {
     /** Refurbished's microwave: what heats, and what came out heated. */
     MICROWAVE("microwave_heating", new int[] {0}, new int[] {1}),
     /** Refurbished's oven: three things bake at once, each into the slot three further on. */
-    OVEN("oven_baking", new int[] {0, 1, 2}, new int[] {3, 4, 5});
+    OVEN("oven_baking", new int[] {0, 1, 2}, new int[] {3, 4, 5}),
+    /** Refurbished's generator: the fuel that burns; what it leaves (a lava bucket's bucket) is moved off like a thing that does not burn. */
+    GENERATOR(null, new int[] {0}, new int[0]);
 
+    /** The recipes it processes by, or null for the generator, which burns whatever burns in a furnace. */
     private final ResourceLocation recipeType;
     private final int[] inputs;
     private final int[] outputs;
@@ -42,10 +47,11 @@ public enum ProcessingSlots {
     private final int room;
 
     ProcessingSlots(String recipeType, int[] inputs, int[] outputs) {
-        this.recipeType = ResourceLocation.fromNamespaceAndPath(Furniture.REFURBISHED, recipeType);
+        this.recipeType = recipeType == null ? null : ResourceLocation.fromNamespaceAndPath(Furniture.REFURBISHED, recipeType);
         this.inputs = inputs;
         this.outputs = outputs;
-        this.room = outputs[outputs.length - 1] + 1;
+        int[] own = outputs.length > 0 ? outputs : inputs;
+        this.room = own[own.length - 1] + 1;
     }
 
     public int input(int pair) {
@@ -62,6 +68,7 @@ public enum ProcessingSlots {
             case FREEZER -> Optional.of(FREEZER);
             case MICROWAVE -> Optional.of(MICROWAVE);
             case STOVE -> Optional.of(OVEN);
+            case GENERATOR -> Optional.of(GENERATOR);
             default -> Optional.empty();
         };
     }
@@ -78,7 +85,7 @@ public enum ProcessingSlots {
         for (int pair = 0; pair < inputs.length; pair++) {
             int in = inputs[pair];
             ItemStack input = container.getItem(in);
-            if (input.isEmpty() || resultOf(level, input).isEmpty()) {
+            if (input.isEmpty() || !processes(level, input)) {
                 int found = find(container, size, level);
                 if (found >= 0) {
                     swap(state, in, found);
@@ -87,6 +94,9 @@ public enum ProcessingSlots {
                     // Nothing to process: the input is left empty, for a hopper to fill.
                     moved |= moveAway(state, container, size, in);
                 }
+            }
+            if (pair >= outputs.length) {
+                continue;
             }
             input = container.getItem(in);
             ItemStack output = container.getItem(outputs[pair]);
@@ -109,6 +119,36 @@ public enum ProcessingSlots {
         });
     }
 
+    /**
+     * Whether anything in the furniture still has to be processed: a thing waiting or in an input that its recipes turn into
+     * something. Works on either side (the client knows the recipes too).
+     */
+    public boolean hasWork(BlockEntity furniture) {
+        Level level = furniture.getLevel();
+        if (level == null || !(furniture instanceof Container container)) {
+            return false;
+        }
+        for (int i = 0; i < container.getContainerSize(); i++) {
+            if (isOutput(i)) {
+                continue;
+            }
+            ItemStack stack = container.getItem(i);
+            if (!stack.isEmpty() && processes(level, stack)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isOutput(int slot) {
+        for (int output : outputs) {
+            if (output == slot) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Sends the block's data to the clients that see it, as for a thing put in by hand. */
     public static void sync(BlockEntity entity) {
         Level level = entity.getLevel();
@@ -122,16 +162,27 @@ public enum ProcessingSlots {
     private int find(Container container, int size, Level level) {
         for (int i = room; i < size; i++) {
             ItemStack stack = container.getItem(i);
-            if (!stack.isEmpty() && !resultOf(level, stack).isEmpty()) {
+            if (!stack.isEmpty() && processes(level, stack)) {
                 return i;
             }
         }
         return -1;
     }
 
-    /** What processing {@code input} gives, or empty. */
+    /** Whether the furniture does something with {@code stack}: it has a recipe for it, or (the generator) it burns. */
+    public boolean processes(Level level, ItemStack stack) {
+        if (recipeType == null) {
+            return !stack.isEmpty() && Services.ITEM.getBurnTime(stack, null) > 0;
+        }
+        return !resultOf(level, stack).isEmpty();
+    }
+
+    /** What processing {@code input} gives, or empty (always for the generator, whose fuel gives power). */
     @SuppressWarnings("unchecked")
     public ItemStack resultOf(Level level, ItemStack input) {
+        if (recipeType == null) {
+            return ItemStack.EMPTY;
+        }
         RecipeType<Recipe<SingleRecipeInput>> type = (RecipeType<Recipe<SingleRecipeInput>>) BuiltInRegistries.RECIPE_TYPE
                 .getOptional(recipeType).orElse(null);
         if (type == null || input.isEmpty()) {

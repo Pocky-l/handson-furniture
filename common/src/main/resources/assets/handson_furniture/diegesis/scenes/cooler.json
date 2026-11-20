@@ -50,7 +50,8 @@
         ],
         "height": 1,
         "clearance": 8,
-        "wall": 12
+        "wall": 12,
+        "flat_rest": "lie"
       }
     ]
   },

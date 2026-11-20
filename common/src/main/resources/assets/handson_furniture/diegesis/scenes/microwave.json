@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/Pocky-l/diegesis/main/docs/schema/scene.schema.json",
-  "$comment": "Refurbished's microwave, front to -z here (its facing names its back). The block is swapped for body (the microwave with the cavity behind its door hollowed out: dark walls, a light rim; the control panel as Refurbished has it), door and plate, Refurbished's own boxes and textures turned round; the plate is ours, in the cream of Refurbished's plate. The door hangs on the viewer's left at its outer front corner (x 15, z 3), as a microwave's does; code swings it open. A click on the door opens or shuts it. Its window is clear: the inside shows through it. Items stand on the plate, which code turns while the microwave heats, and what stands on it turns along. The power switch (Refurbished's own on and off, its menu's power button) is a rocker key on the control panel, standing where Refurbished draws its button, bound to the control power; while it is on, the panel's green lamp (lamp, ours) glows. The camera stands at the front right, three-quarters and above, the open door in the shot on the left and the plate in the middle.",
+  "$comment": "Refurbished's microwave, front to -z here (its facing names its back). The block is swapped for body (the microwave with the cavity behind its door hollowed out: dark walls, a light rim; the control panel as Refurbished has it), door and plate, Refurbished's own boxes and textures turned round; the plate is ours, in the cream of Refurbished's plate. The door hangs on the viewer's left at its outer front corner (x 15, z 3), as a microwave's does; code swings it open. A click on the door opens or shuts it. Its window is clear: the inside shows through it. Items stand on the plate, which code turns while the microwave heats, and what stands on it turns along. The power switch (Refurbished's own on and off, its menu's power button) is a rocker key on the control panel, standing where Refurbished draws its button, bound to the control power; while it is on, the panel's green lamp (lamp, ours) glows. The camera stands at the front right, three-quarters and above, the open door in the shot on the left and the plate in the middle. A lamp cover in the cavity's side wall (light, ours) glows and lights the plate while the microwave heats. What comes in without a place (a shift-click, a hopper) goes onto the plate's middle (fill: middle), then round it. Flat things (bread, a potato's icon) lie on the plate (flat_rest: lie), so they turn with it as food on a plate does, never edge-on.",
   "work_plane": 8,
   "idle_visible": true,
   "camera": {
@@ -51,7 +51,9 @@
         "height": 2,
         "clearance": 6,
         "aim_height": 2,
-        "wall": 12
+        "wall": 12,
+        "fill": "middle",
+        "flat_rest": "lie"
       }
     ]
   },
@@ -191,6 +193,37 @@
         "model": "handson_furniture:diegesis/microwave/lamp",
         "tint": "#FF5CF08A",
         "emissive": true
+      }
+    },
+    {
+      "id": "light",
+      "pos": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "pickable": false,
+      "hidden": true,
+      "visual": {
+        "model": "handson_furniture:diegesis/microwave/light",
+        "tint": "#FFFFE7B0",
+        "lit_as_block": true
+      },
+      "light": {
+        "level": 12,
+        "radius": 12,
+        "color": "#60FFE2A0",
+        "flicker": 0,
+        "offset": [
+          -5,
+          7,
+          -3
+        ]
       }
     }
   ]

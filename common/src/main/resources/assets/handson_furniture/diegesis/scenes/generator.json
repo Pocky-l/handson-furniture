@@ -1,0 +1,90 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Pocky-l/diegesis/main/docs/schema/scene.schema.json",
+  "$comment": "Refurbished's electricity generator, front to -z here (its facing names its back). The block is swapped for body (the generator with a firebox hollowed behind the service panel on its side, the viewer's left: dark walls, a grate of bars over a bed of embers; the screen, buttons, lamp and filler neck as Refurbished has them; body_on or body_off by its powered state, as its lamp shows) and panel, Refurbished's own boxes and textures turned round. The panel is hinged along its back edge (x 16, z 14 here); code swings it out. A click on the panel opens or shuts it. Fuel lies anywhere on the grate; Refurbished burns its one fuel slot, and code puts a fuel from the grate into it before each tick. The embers (ours, magma) glow while the generator runs and are dark otherwise; the light over them lights the firebox then. The power key (Refurbished's own on and off, its menu's power button) is the microwave's rocker key over the left button under the screen, bound to the control power. The screen shows, as a green bar, how much of the burning fuel is left (screen, a shape code draws). The camera stands at the front left, three-quarters and above, the open panel and the firebox on the right of the shot, the screen and key on the left. What comes in without a place (a shift-click, a hopper) goes onto the grate.",
+  "work_plane": 8,
+  "idle_visible": true,
+  "camera": {
+    "position": [36, 26, -26],
+    "target": [9, 6, 8],
+    "fov": 32,
+    "interactive_at": 0.6
+  },
+  "interface": {
+    "hide_player": true,
+    "inventory_panel": false,
+    "highlight_color": "#26FFFFFF",
+    "counts_on_top": true
+  },
+  "inventory_drawer": {
+    "layout": "hotbar",
+    "always_open": true,
+    "carry_size": 3.2
+  },
+  "placing": {
+    "group": "items",
+    "item_size": 3.0,
+    "scale_range": [0.5, 1.6],
+    "counts": "hover",
+    "physics": {},
+    "light_color": "#00FFC888",
+    "surfaces": [
+      {
+        "from": [6, 2],
+        "to": [14, 14],
+        "height": 7,
+        "clearance": 7,
+        "aim_height": 3,
+        "wall": 14,
+        "open": ["left"]
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "pos": [8, 0, 8],
+      "rotation": [0, 180, 0],
+      "pickable": false,
+      "hidden": true,
+      "visual": {"model": "handson_furniture:diegesis/generator/light_body_off", "lit_as_block": true}
+    },
+    {
+      "id": "embers",
+      "pos": [8, 0, 8],
+      "rotation": [0, 180, 0],
+      "pickable": false,
+      "hidden": true,
+      "visual": {"model": "handson_furniture:diegesis/generator/embers", "lit_as_block": true}
+    },
+    {
+      "id": "panel",
+      "pos": [16, 0, 14],
+      "rotation": [0, 180, 0],
+      "pickable": true,
+      "collider": {"from": [-1, 5, 0], "to": [1.5, 14, 12]},
+      "hidden": true,
+      "visual": {"model": "handson_furniture:diegesis/generator/light_panel", "lit_as_block": true, "anchor": [0, 0, 2]}
+    },
+    {
+      "id": "power",
+      "pos": [7, 4.5, 0],
+      "hidden": true,
+      "collider": {"from": [-1.5, -0.5, -1.5], "to": [1.5, 3.5, 0]},
+      "visual": {"model": "handson_furniture:diegesis/generator/light_power", "lit_as_block": true},
+      "control": {"control": "power", "type": "toggle", "axis": [1, 0, 0], "range": [-15, 15], "pivot": [0, 1.5, 0]}
+    },
+    {
+      "id": "screen",
+      "pos": [8, 10, 0],
+      "pickable": false,
+      "hidden": true
+    },
+    {
+      "id": "light",
+      "pos": [10, 8, 8],
+      "pickable": false,
+      "hidden": true,
+      "light": {"level": 12, "radius": 12, "color": "#60FF9A40", "flicker": 0.15, "offset": [0, 0, 0]}
+    }
+  ]
+}

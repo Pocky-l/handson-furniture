@@ -8,7 +8,15 @@
     "ProcessingLootBlockEntityMixin",
     "ProcessingContainerBlockEntityMixin",
     "MicrowaveBlockEntityMixin",
-    "StoveBlockEntityMixin"
+    "StoveBlockEntityMixin",
+    "BlockStateLightAccess",
+    "RefurbishedLightMixin",
+    "LightEngineAccess",
+    "BlockLightEngineMixin",
+    "GeneratorAccess",
+    "ElectricityGeneratorBlockEntityMixin",
+    "RefurbishedMenuMixin",
+    "FurnitureEntityBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1

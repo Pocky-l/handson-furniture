@@ -50,7 +50,8 @@
         ],
         "height": 8,
         "clearance": 5,
-        "headroom": 10
+        "headroom": 10,
+        "flat_rest": "lie"
       },
       {
         "from": [
@@ -62,7 +63,8 @@
           3
         ],
         "height": 1,
-        "clearance": 6
+        "clearance": 6,
+        "flat_rest": "lie"
       }
     ]
   },

@@ -48,6 +48,27 @@
         "T004"
       ],
       "reason": "Refurbished's cooler sheet is 64x32: its UVs are 4 texels a unit across and 2 down, the same density as the faces"
+    },
+    {
+      "model": "handson_furniture:diegesis/generator/*body*",
+      "element": "*",
+      "face": "*",
+      "flags": [
+        "F014",
+        "G004",
+        "H006",
+        "Z003"
+      ],
+      "reason": "Refurbished's own generator boxes kept as it has them: the filler neck is an inverted box standing out of the top, its lamp a decal 0.01 in front"
+    },
+    {
+      "model": "handson_furniture:diegesis/mail_box/*body*",
+      "element": "roof_*",
+      "face": "*",
+      "flags": [
+        "G001"
+      ],
+      "reason": "Refurbished's own roof, repeated as its model has it (17.75 and 19.75, turned 22.5 degrees)"
     }
   ]
 }

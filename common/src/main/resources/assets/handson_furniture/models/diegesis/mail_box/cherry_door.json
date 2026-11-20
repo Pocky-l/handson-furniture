@@ -1,0 +1,7 @@
+{
+  "parent": "handson_furniture:diegesis/mail_box/door",
+  "textures": {
+    "particle": "refurbished_furniture:block/cherry_particle",
+    "texture": "refurbished_furniture:block/cherry_mail_box"
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "refurbished_furniture:block/light_particle",
+    "texture": "refurbished_furniture:block/light_electricity_generator"
+  },
+  "elements": [
+    {
+      "name": "panel",
+      "from": [
+        0,
+        5,
+        2
+      ],
+      "to": [
+        1,
+        14,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            9.5,
+            5.25,
+            10
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            5,
+            9.5,
+            5.25,
+            10
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            5,
+            9.5,
+            5.25,
+            10
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            4.5,
+            9,
+            7.5,
+            13.5
+          ],
+          "texture": "#texture",
+          "cullface": "west"
+        },
+        "up": {
+          "uv": [
+            5,
+            9.5,
+            5.25,
+            10
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            5,
+            9.5,
+            5.25,
+            10
+          ],
+          "texture": "#texture"
+        }
+      }
+    }
+  ]
+}

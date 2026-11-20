@@ -23,14 +23,19 @@ FURNITURE = {
     'drawer': (KITCHEN[:10], 'drawer', ['body', 'body_left', 'body_middle', 'body_right', 'tray', 'tray_lower']),
     'microwave': (['light', 'dark'], 'microwave', ['body', 'door', 'power']),
     'stove': (['light', 'dark'], 'stove', ['body', 'door', 'power']),
+    'generator': (['light', 'dark'], 'electricity_generator', ['body_off', 'body_on', 'panel', 'power']),
+    'mail_box': (KITCHEN[:10], 'mail_box', ['body', 'body_unchecked', 'door']),
 }
+
+# Parts that are another piece's model in this piece's finish: the generator's power key is the microwave's.
+BORROWED = {('generator', 'power'): 'microwave/power'}
 
 # Parts drawn in a sheet of ours, one per finish, instead of Refurbished's sheet of the variant: the appliances' controls.
 OWN_SHEETS = {'power': 'handson_furniture:block/{variant}_appliance_controls',
               'power_plate': 'handson_furniture:block/{variant}_appliance_controls'}
 
 # Parts that are the same on every variant (ours, in a texture of their own): kept as they are, no variant models.
-SHARED = {'microwave': ['plate', 'lamp'], 'stove': ['element']}
+SHARED = {'fridge': ['light'], 'microwave': ['plate', 'lamp', 'light'], 'stove': ['element', 'light'], 'generator': ['embers']}
 
 
 def main():
@@ -38,12 +43,12 @@ def main():
     for furniture, (variants, texture, parts) in FURNITURE.items():
         folder = MODELS / furniture
         for old in folder.glob('*.json'):
-            if old.stem not in parts and old.stem not in SHARED.get(furniture, []):
+            if old.stem not in parts and old.stem not in SHARED.get(furniture, []) and (furniture, old.stem) not in BORROWED:
                 old.unlink()
         for variant in variants:
             for part in parts:
                 model = {
-                    'parent': f'handson_furniture:diegesis/{furniture}/{part}',
+                    'parent': f'handson_furniture:diegesis/{BORROWED.get((furniture, part), f"{furniture}/{part}")}',
                     'textures': {
                         'particle': f'refurbished_furniture:block/{variant}_particle',
                         'texture': OWN_SHEETS[part].format(variant=variant) if part in OWN_SHEETS

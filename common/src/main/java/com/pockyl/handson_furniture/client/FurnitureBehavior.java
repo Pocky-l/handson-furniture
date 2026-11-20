@@ -1,6 +1,7 @@
 package com.pockyl.handson_furniture.client;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -10,8 +11,10 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
+import com.mrcrayfish.furniture.refurbished.blockentity.ElectricityGeneratorBlockEntity;
 import com.mrcrayfish.furniture.refurbished.blockentity.MicrowaveBlockEntity;
 
+import com.pockyl.diegesis.api.client.MeshShape;
 import com.pockyl.diegesis.api.client.NodeView;
 import com.pockyl.diegesis.api.client.StationBehavior;
 import com.pockyl.diegesis.api.client.StationView;
@@ -20,6 +23,8 @@ import com.pockyl.diegesis.api.scene.Visual;
 import com.pockyl.diegesis.api.state.SlotRef;
 import com.pockyl.handson_furniture.Furniture;
 import com.pockyl.handson_furniture.HandsOnFurniture;
+import com.pockyl.handson_furniture.mixin.GeneratorAccess;
+import com.pockyl.handson_furniture.station.ProcessingSlots;
 import com.pockyl.handson_furniture.station.StorageLogic;
 
 import java.util.LinkedHashMap;
@@ -140,6 +145,38 @@ final class FurnitureBehavior implements StationBehavior {
     private static final String ELEMENT = "element";
     /** The element unlit: its red darkened to the iron of a cold coil. */
     private static final int COLD = 0xFF4A4448;
+    /** The generator's bed of embers under its grate: glowing while it runs, dark otherwise. */
+    private static final String EMBERS = "embers";
+    /** Embers gone out: the magma darkened to cold slag. */
+    private static final int ASH = 0xFF3A3230;
+    /** The generator's screen: a bar of what is left of the fuel burning now. */
+    private static final String SCREEN = "screen";
+    /** The screen's bar: half its length, its height and how far it stands off the screen, pixels. */
+    private static final float BAR_HALF = 3.0F;
+    private static final float BAR_HIGH = 1.0F;
+    private static final float BAR_OFF = -0.03F;
+    /** One texel of lime concrete, stretched along the bar: an even green. */
+    @SuppressWarnings("removal")
+    private static final ResourceLocation BAR = new ResourceLocation("minecraft", "block/lime_concrete");
+
+    /**
+     * The light inside: the fridge's strip down its side wall, the microwave's cover in its cavity wall, the oven's on its side
+     * wall. Each node shines on what stands near it while it is on (the scene's {@code light}), and the one with a model glows;
+     * the fridge's strip has one for each shelf's room, as a light does not reach through a shelf.
+     */
+    private static final List<String> LIGHTS = List.of("light", "light_middle", "light_low");
+    /**
+     * How far a door is off its frame when its lamp switch lets go, of the way open: the fridge's and the microwave's lamps come
+     * on as the door cracks open, and go out just before the door meets the frame, as a door switch does.
+     */
+    private static final float DOOR_SWITCH = 0.04F;
+    /** How long a lamp takes to come on, seconds: a short warm-up, not a flash; it goes out quicker. */
+    private static final float LAMP_ON_SECONDS = 0.08F;
+    private static final float LAMP_OFF_SECONDS = 0.05F;
+    /** The lamp's cover while it is out: a pale grey, lit as the block around it. */
+    private static final int LAMP_OFF = 0xFFA7ACB2;
+    /** How long the line about missing power stays, seconds. */
+    private static final float NO_POWER_SECONDS = 4.0F;
 
     /** The middle of the block across, scene pixels: the plane the camera is mirrored across. */
     private static final float MIDDLE = 8.0F;
@@ -205,8 +242,19 @@ final class FurnitureBehavior implements StationBehavior {
     private final Turntable turntable;
     /** Where the plate stands, degrees: it stops where it is when the heating stops. */
     private float plateAngle;
-    /** Whether the oven's element was last drawn glowing; null before it is first drawn. */
+    /** Whether the oven's element (the generator's embers) was last drawn glowing; null before it is first drawn. */
     private Boolean elementLit;
+    /** The generator's energy as last sent, the game time it was seen, and the share of the bar last drawn (-1 none). */
+    private int energySeen = -1;
+    private long energySeenAt;
+    private float barDrawn = -2.0F;
+    /** How bright the lamp inside is, 0 off to 1 on, and how bright it was last drawn (NaN before it is first drawn). */
+    private float lamp;
+    private float lampDrawn = Float.NaN;
+    /** Whether the player was told the appliance has no power, since it last had some or was switched off. */
+    private boolean toldNoPower;
+    /** Whether the power switch was on in the last frame: switching it on with nothing to heat is told once. */
+    private boolean powerWasOn;
     /** Per control, how its door or drawer moves (a cabinet's two hinged doors are one: only one of them shows). */
     private final Map<String, Swing> swings = new LinkedHashMap<>();
     /** The control whose door or drawer the camera goes with: the one opened last. */
@@ -228,6 +276,7 @@ final class FurnitureBehavior implements StationBehavior {
     @Override
     public void onSceneReady(StationView view) {
         dress(view);
+        powerWasOn = furniture.hasPower() && isOpen(view, Furniture.POWER);
         for (Map.Entry<String, Swing> entry : swings.entrySet()) {
             boolean open = isOpen(view, entry.getKey());
             entry.getValue().settle(open);
@@ -235,6 +284,12 @@ final class FurnitureBehavior implements StationBehavior {
                 followed = entry.getKey();
             }
         }
+    }
+
+    /** A player who comes to the appliance switched on without power is told so again. */
+    @Override
+    public void onOpen(StationView view) {
+        toldNoPower = false;
     }
 
     /** Whether a door is open (a drawer out), as the station's state keeps it for everyone. */
@@ -260,14 +315,15 @@ final class FurnitureBehavior implements StationBehavior {
 
     /**
      * The scene stands in for the block while a door is open, or still on the way back: a door left open stays open. A piece
-     * with a window always: what it holds is seen through the glass, and its switch or knob stands on it.
+     * with a window or controls of its own outside always ({@link Furniture#standsInWorld}): what it holds is seen through the
+     * glass, its switch, knob or key and its screen stand on it.
      */
     @Override
     public boolean holdsBlock(StationView view) {
         if (view.isInUse()) {
             return false;
         }
-        if (furniture.hasWindow() && variant != null) {
+        if (furniture.standsInWorld() && variant != null) {
             return true;
         }
         for (Map.Entry<String, Swing> entry : swings.entrySet()) {
@@ -335,10 +391,16 @@ final class FurnitureBehavior implements StationBehavior {
         view.node(Furniture.POWER).ifPresent(node -> node.setVisible(powerShown));
         view.node(POWER_PLATE).ifPresent(node -> node.setVisible(powerShown));
         view.node(ELEMENT).ifPresent(node -> node.setVisible(shown));
-        view.node(LAMP).ifPresent(node -> node.setVisible(shown && isOpen(view, Furniture.POWER)));
+        view.node(EMBERS).ifPresent(node -> node.setVisible(shown));
+        screen(view, state, shown);
+        // The microwave's green lamp shows it is on, and only with power: an appliance without power is dark.
+        boolean unpowered = furniture.hasPower() && StorageLogic.lacksPower(view.level().getBlockEntity(view.pos()));
+        view.node(LAMP).ifPresent(node -> node.setVisible(shown && isOpen(view, Furniture.POWER) && !unpowered));
+        tellNoPower(view, unpowered);
         if (turntable != null) {
             turn(view, dt, shown);
         }
+        light(view, dt, state, shown);
         Vector3f camera = new Vector3f();
         for (Part part : parts) {
             Swing swing = swings.get(part.control());
@@ -368,12 +430,92 @@ final class FurnitureBehavior implements StationBehavior {
     }
 
     /**
+     * Switched on with no power, Refurbished's appliance does nothing, and nothing on it says why (its menu does): the player at
+     * it is told once, as it is switched on or as they come to it.
+     */
+    private void tellNoPower(StationView view, boolean unpowered) {
+        if (!furniture.hasPower()) {
+            return;
+        }
+        if (furniture == Furniture.GENERATOR) {
+            // Switched on with nothing left that burns, it gives no power: its lamp says so, the player is told why once.
+            boolean empty = isOpen(view, Furniture.POWER) && !flag(view.level().getBlockState(view.pos()), "powered")
+                    && !ProcessingSlots.GENERATOR.hasWork(view.level().getBlockEntity(view.pos()));
+            if (empty && !toldNoPower) {
+                view.showCaption(Component.translatable(StorageLogic.NO_FUEL), NO_POWER_SECONDS);
+            }
+            toldNoPower = empty;
+            return;
+        }
+        boolean on = isOpen(view, Furniture.POWER);
+        if (furniture == Furniture.MICROWAVE && on && !powerWasOn && !unpowered
+                && !ProcessingSlots.MICROWAVE.hasWork(view.level().getBlockEntity(view.pos()))) {
+            // Switched on with nothing in it that heats: the server puts the switch back; the player is told why.
+            view.showCaption(Component.translatable(StorageLogic.NOTHING_TO_HEAT), NO_POWER_SECONDS);
+        }
+        powerWasOn = on;
+        boolean waiting = unpowered && on;
+        if (waiting && !toldNoPower) {
+            view.showCaption(Component.translatable(StorageLogic.NO_POWER), NO_POWER_SECONDS);
+        }
+        toldNoPower = waiting;
+    }
+
+    /**
+     * The lamp inside: the fridge's comes on as its door leaves the seal and goes out as it comes back; the microwave's the same
+     * way, and while it heats (on, with power, something in it that heats); the oven's while the stove is lit. On, its cover glows
+     * and it lights what stands inside. The room around gets the block's own light by the same states ({@code FurnitureLight}).
+     */
+    private void light(StationView view, float dt, BlockState state, boolean shown) {
+        if (view.node(LIGHTS.get(0)).isEmpty()) {
+            return;
+        }
+        boolean on = switch (furniture) {
+            case FRIDGE -> swings.get(Furniture.OPEN).open > DOOR_SWITCH;
+            case MICROWAVE -> heating(view) || swings.get(Furniture.OPEN).open > DOOR_SWITCH;
+            case STOVE -> flag(state, "lit");
+            case GENERATOR -> flag(state, "powered");
+            default -> false;
+        };
+        float step = dt / (on ? LAMP_ON_SECONDS : LAMP_OFF_SECONDS);
+        lamp = on ? Math.min(1.0F, lamp + step) : Math.max(0.0F, lamp - step);
+        boolean changed = lamp != lampDrawn;
+        lampDrawn = lamp;
+        for (String id : LIGHTS) {
+            view.node(id).ifPresent(node -> {
+                node.setVisible(shown);
+                if (changed) {
+                    int level = node.definition().light().map(light -> light.level()).orElse(0);
+                    node.setLight(Math.round(level * lamp));
+                    node.definition().visual().ifPresent(drawn -> node.setVisual(new Visual(drawn.model(), drawn.mesh(), drawn.texture(),
+                            drawn.item(), drawn.block(), drawn.anchor(), lerpColor(LAMP_OFF, drawn.tint(), lamp), false, lamp > 0.0F, false,
+                            0.0F, lamp <= 0.0F)));
+                }
+            });
+        }
+    }
+
+    private static int lerpColor(int from, int to, float t) {
+        int color = 0xFF000000;
+        for (int shift = 0; shift < 24; shift += 8) {
+            int a = from >> shift & 0xFF;
+            int b = to >> shift & 0xFF;
+            color |= Math.round(a + (b - a) * t) << shift;
+        }
+        return color;
+    }
+
+    /** Whether the microwave heats now: on, with power, with something in it that heats, as Refurbished hums while it does. */
+    private static boolean heating(StationView view) {
+        return view.level().getBlockEntity(view.pos()) instanceof MicrowaveBlockEntity microwave && microwave.canPlayAudio();
+    }
+
+    /**
      * Turns the microwave's plate while it heats (on, with power, something in it that heats), and what stands on the plate with
      * it, as Refurbished's microwave hums while it heats.
      */
     private void turn(StationView view, float dt, boolean shown) {
-        boolean heating = view.level().getBlockEntity(view.pos()) instanceof MicrowaveBlockEntity microwave && microwave.canPlayAudio();
-        if (heating) {
+        if (heating(view)) {
             plateAngle = (plateAngle + dt * turntable.degreesPerSecond()) % 360.0F;
         }
         view.node(turntable.node()).ifPresent(node -> {
@@ -385,16 +527,65 @@ final class FurnitureBehavior implements StationBehavior {
                 .translate(-center.x(), -center.y(), -center.z()));
     }
 
-    /** The oven's element glows while the stove is lit (switched on, with power), as Refurbished's own state says. */
+    /**
+     * The oven's element glows while the stove is lit (switched on, with power), the generator's embers while it runs (switched
+     * on, burning), as Refurbished's own states say.
+     */
     private void dressElement(StationView view, BlockState state) {
-        boolean lit = flag(state, "lit");
+        boolean generator = furniture == Furniture.GENERATOR;
+        boolean lit = flag(state, generator ? "powered" : "lit");
         if (elementLit != null && elementLit == lit) {
             return;
         }
         elementLit = lit;
-        view.node(ELEMENT).ifPresent(node -> node.definition().visual().ifPresent(drawn -> node.setVisual(new Visual(drawn.model(),
-                drawn.mesh(), drawn.texture(), drawn.item(), drawn.block(), drawn.anchor(), lit ? Visual.WHITE : COLD, false, lit, false,
-                0.0F, !lit))));
+        int dark = generator ? ASH : COLD;
+        view.node(generator ? EMBERS : ELEMENT).ifPresent(node -> node.definition().visual().ifPresent(drawn -> node.setVisual(
+                new Visual(drawn.model(), drawn.mesh(), drawn.texture(), drawn.item(), drawn.block(), drawn.anchor(),
+                        lit ? Visual.WHITE : dark, false, lit, false, 0.0F, !lit))));
+    }
+
+    /**
+     * The generator's screen: a green bar of what is left of the fuel burning now, as its menu shows it. The server sends the
+     * energy as each fuel goes in; while it runs it goes down by one a tick, counted here.
+     */
+    private void screen(StationView view, BlockState state, boolean shown) {
+        if (view.node(SCREEN).isEmpty()) {
+            return;
+        }
+        float share = 0.0F;
+        if (view.level().getBlockEntity(view.pos()) instanceof ElectricityGeneratorBlockEntity generator) {
+            int energy = generator.getEnergy();
+            long now = view.level().getGameTime();
+            if (energy != energySeen) {
+                energySeen = energy;
+                energySeenAt = now;
+            }
+            float left = flag(state, "powered") ? energySeen - (now - energySeenAt) : energySeen;
+            int total = ((GeneratorAccess) generator).handson$totalEnergy();
+            share = total > 0 ? Mth.clamp(left / total, 0.0F, 1.0F) : 0.0F;
+        }
+        // In steps of an eighth of a pixel: the bar moves as the fuel burns, it is not built anew every frame.
+        float drawn = shown ? Math.round(share * 48.0F) / 48.0F : -1.0F;
+        if (drawn == barDrawn) {
+            return;
+        }
+        barDrawn = drawn;
+        view.node(SCREEN).ifPresent(node -> {
+            node.setVisible(drawn > 0.0F);
+            if (drawn > 0.0F) {
+                // Full from the viewer's left (+x here), shrinking towards it.
+                float right = BAR_HALF - 2.0F * BAR_HALF * drawn;
+                float u0 = 7.25F / 16.0F;
+                float u1 = 7.75F / 16.0F;
+                MeshShape.Builder bar = MeshShape.builder();
+                // Wound to face the front (-z).
+                bar.corner(right, BAR_HIGH, BAR_OFF, u1, u0, 0.0F, 0.0F, -1.0F);
+                bar.corner(BAR_HALF, BAR_HIGH, BAR_OFF, u0, u0, 0.0F, 0.0F, -1.0F);
+                bar.corner(BAR_HALF, 0.0F, BAR_OFF, u0, u1, 0.0F, 0.0F, -1.0F);
+                bar.corner(right, 0.0F, BAR_OFF, u1, u1, 0.0F, 0.0F, -1.0F);
+                node.setShape(bar.build(), BAR, true);
+            }
+        });
     }
 
     /** Gives the body and the moving parts the models of the block's variant (its wood, colour or finish). */
@@ -410,7 +601,13 @@ final class FurnitureBehavior implements StationBehavior {
         String hinge = hinge(state);
         // The scene's camera looks in past a door hung on the left; a door on the right has it from the other side.
         view.mirrorCamera("right".equals(hinge) ? MIDDLE : Float.NaN);
-        String body = variant + "_body" + (hinge != null ? "_" + hinge : row(state));
+        // The generator's body by Refurbished's lamp on its front: green while it runs, amber while it does not. A mail box's with
+        // its flag up while its mail is not checked.
+        String body = switch (furniture) {
+            case GENERATOR -> variant + "_body_" + (flag(state, "powered") ? "on" : "off");
+            case MAIL_BOX -> variant + "_body" + (flag(state, "enabled") ? "_unchecked" : "");
+            default -> variant + "_body" + (hinge != null ? "_" + hinge : row(state));
+        };
         view.node("body").ifPresent(node -> node.setVisual(model(body, node)));
         for (Part part : parts) {
             view.node(part.node()).ifPresent(node -> node.setVisual(model(variant + "_" + part.model(), node)));

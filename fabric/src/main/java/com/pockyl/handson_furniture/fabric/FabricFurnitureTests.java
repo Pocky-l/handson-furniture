@@ -97,4 +97,54 @@ public final class FabricFurnitureTests implements FabricGameTest {
     public void aFullDrawerLeavesTheRest(GameTestHelper helper) {
         FurnitureTests.aFullDrawerLeavesTheRest(helper);
     }
+
+    @GameTest(template = FabricGameTest.EMPTY_STRUCTURE, timeoutTicks = 900)
+    public void aPoweredFreezerFreezesWhatStandsAnywhere(GameTestHelper helper) {
+        FurnitureTests.aPoweredFreezerFreezesWhatStandsAnywhere(helper);
+    }
+
+    @GameTest(template = FabricGameTest.EMPTY_STRUCTURE, timeoutTicks = 400)
+    public void aPoweredMicrowaveHeatsWhatStandsOnThePlate(GameTestHelper helper) {
+        FurnitureTests.aPoweredMicrowaveHeatsWhatStandsOnThePlate(helper);
+    }
+
+    @GameTest(template = FabricGameTest.EMPTY_STRUCTURE)
+    public void lampsLightTheRoom(GameTestHelper helper) {
+        FurnitureTests.lampsLightTheRoom(helper);
+    }
+
+    @GameTest(template = FabricGameTest.EMPTY_STRUCTURE, timeoutTicks = 700)
+    public void aMicrowaveHeatsOnlyWithItsDoorShutAndLightsTheRoom(GameTestHelper helper) {
+        FurnitureTests.aMicrowaveHeatsOnlyWithItsDoorShutAndLightsTheRoom(helper);
+    }
+
+    @GameTest(template = FabricGameTest.EMPTY_STRUCTURE, timeoutTicks = 700)
+    public void aMicrowaveSwitchesItselfOffWhenDone(GameTestHelper helper) {
+        FurnitureTests.aMicrowaveSwitchesItselfOffWhenDone(helper);
+    }
+
+    @GameTest(template = FabricGameTest.EMPTY_STRUCTURE, timeoutTicks = 100)
+    public void aRightClickPutsOneDown(GameTestHelper helper) {
+        FurnitureTests.aRightClickPutsOneDown(helper);
+    }
+
+    @GameTest(template = FabricGameTest.EMPTY_STRUCTURE, timeoutTicks = 100)
+    public void aGeneratorBurnsFuelLyingAnywhere(GameTestHelper helper) {
+        FurnitureTests.aGeneratorBurnsFuelLyingAnywhere(helper);
+    }
+
+    @GameTest(template = FabricGameTest.EMPTY_STRUCTURE, timeoutTicks = 100)
+    public void aGeneratorMovesTheEmptyBucketAside(GameTestHelper helper) {
+        FurnitureTests.aGeneratorMovesTheEmptyBucketAside(helper);
+    }
+
+    @GameTest(template = FabricGameTest.EMPTY_STRUCTURE)
+    public void aMailBoxsFrontChecksTheMail(GameTestHelper helper) {
+        FurnitureTests.aMailBoxsFrontChecksTheMail(helper);
+    }
+
+    @GameTest(template = FabricGameTest.EMPTY_STRUCTURE)
+    public void menusAndComparatorsCountRefurbishedsSlots(GameTestHelper helper) {
+        FurnitureTests.menusAndComparatorsCountRefurbishedsSlots(helper);
+    }
 }

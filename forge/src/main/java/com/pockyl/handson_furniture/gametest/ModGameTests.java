@@ -103,4 +103,54 @@ public final class ModGameTests {
     public static void aFullDrawerLeavesTheRest(GameTestHelper helper) {
         FurnitureTests.aFullDrawerLeavesTheRest(helper);
     }
+
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void aPoweredFreezerFreezesWhatStandsAnywhere(GameTestHelper helper) {
+        FurnitureTests.aPoweredFreezerFreezesWhatStandsAnywhere(helper);
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void aPoweredMicrowaveHeatsWhatStandsOnThePlate(GameTestHelper helper) {
+        FurnitureTests.aPoweredMicrowaveHeatsWhatStandsOnThePlate(helper);
+    }
+
+    @GameTest(template = "empty")
+    public static void lampsLightTheRoom(GameTestHelper helper) {
+        FurnitureTests.lampsLightTheRoom(helper);
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 700)
+    public static void aMicrowaveHeatsOnlyWithItsDoorShutAndLightsTheRoom(GameTestHelper helper) {
+        FurnitureTests.aMicrowaveHeatsOnlyWithItsDoorShutAndLightsTheRoom(helper);
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 700)
+    public static void aMicrowaveSwitchesItselfOffWhenDone(GameTestHelper helper) {
+        FurnitureTests.aMicrowaveSwitchesItselfOffWhenDone(helper);
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void aRightClickPutsOneDown(GameTestHelper helper) {
+        FurnitureTests.aRightClickPutsOneDown(helper);
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void aGeneratorBurnsFuelLyingAnywhere(GameTestHelper helper) {
+        FurnitureTests.aGeneratorBurnsFuelLyingAnywhere(helper);
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void aGeneratorMovesTheEmptyBucketAside(GameTestHelper helper) {
+        FurnitureTests.aGeneratorMovesTheEmptyBucketAside(helper);
+    }
+
+    @GameTest(template = "empty")
+    public static void aMailBoxsFrontChecksTheMail(GameTestHelper helper) {
+        FurnitureTests.aMailBoxsFrontChecksTheMail(helper);
+    }
+
+    @GameTest(template = "empty")
+    public static void menusAndComparatorsCountRefurbishedsSlots(GameTestHelper helper) {
+        FurnitureTests.menusAndComparatorsCountRefurbishedsSlots(helper);
+    }
 }

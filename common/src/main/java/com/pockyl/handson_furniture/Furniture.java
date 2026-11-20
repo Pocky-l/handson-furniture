@@ -48,7 +48,17 @@ public enum Furniture {
      * The oven of the stove: Refurbished bakes each of its first three slots into the one three further on while the stove is
      * on and has power; what waits stands beside, on the floor and the rack.
      */
-    STOVE("stove", "stove", 160, List.of("light", "dark"), List.of(Furniture.OPEN));
+    STOVE("stove", "stove", 160, List.of("light", "dark"), List.of(Furniture.OPEN)),
+    /**
+     * The electricity generator: a firebox behind the service panel on its side, fuel lying anywhere on its grate. Refurbished
+     * burns its one slot; what waits lies beside, and goes in as the burning one runs out.
+     */
+    GENERATOR("generator", "electricity_generator", 64, List.of("light", "dark"), List.of(Furniture.OPEN)),
+    /**
+     * A mail box on its post: its front comes down, the mail lies on its floor. Its room is the most Refurbished's own may be
+     * set to (six rows), so all its mail is in reach whatever the server's setting; the flag goes down as its front is opened.
+     */
+    MAIL_BOX("mail_box", "mail_box", 54, Woods.WOODS, List.of(Furniture.OPEN));
 
     /** The slot group of every station: the furniture's own slots, in order. */
     public static final String ITEMS = "items";
@@ -57,7 +67,7 @@ public enum Furniture {
     /** The same for a second door or drawer under the first: the kitchen drawer's lower drawer. */
     public static final String OPEN_LOWER = "open_lower";
     /**
-     * The power switch of a freezer, a microwave or a stove, 1 on: Refurbished's own on and off (its menu's power button), kept
+     * The power switch of a freezer, a microwave, a stove or a generator, 1 on: Refurbished's own on and off (its menu's power button), kept
      * by the furniture itself; the station's control only shows it and turns it.
      */
     public static final String POWER = "power";
@@ -170,9 +180,18 @@ public enum Furniture {
         return this == MICROWAVE || this == STOVE;
     }
 
-    /** Whether it has Refurbished's on and off: the freezer, the microwave and the stove. */
+    /**
+     * Whether the world shows the station's copy of it at all times, not Refurbished's block: a piece with a window, and one
+     * whose outside has parts of the station's own (the generator's power key and the bar on its screen): the block looks the
+     * same in the world as at its station, and no key or screen appears only once it is opened.
+     */
+    public boolean standsInWorld() {
+        return hasWindow() || this == GENERATOR;
+    }
+
+    /** Whether it has Refurbished's on and off: the freezer, the microwave, the stove and the generator. */
     public boolean hasPower() {
-        return this == FREEZER || this == MICROWAVE || this == STOVE;
+        return this == FREEZER || this == MICROWAVE || this == STOVE || this == GENERATOR;
     }
 
     private static boolean holdsWrench(Player player) {

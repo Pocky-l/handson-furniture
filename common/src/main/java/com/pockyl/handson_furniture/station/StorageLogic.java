@@ -5,17 +5,24 @@ import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 import com.mrcrayfish.furniture.refurbished.blockentity.BasicLootBlockEntity;
+import com.mrcrayfish.furniture.refurbished.blockentity.ElectricityGeneratorBlockEntity;
 import com.mrcrayfish.furniture.refurbished.blockentity.IHomeControlDevice;
+import com.mrcrayfish.furniture.refurbished.blockentity.MailboxBlockEntity;
+import com.mrcrayfish.furniture.refurbished.blockentity.MicrowaveBlockEntity;
 import com.mrcrayfish.furniture.refurbished.blockentity.StoveBlockEntity;
+import com.mrcrayfish.furniture.refurbished.electricity.IModuleNode;
 
 import com.pockyl.diegesis.api.state.SlotRef;
 import com.pockyl.diegesis.api.state.SlotStorage;
+import com.pockyl.diegesis.api.state.StationHost;
 import com.pockyl.diegesis.api.station.StationContext;
 import com.pockyl.diegesis.api.station.StationLogic;
 import com.pockyl.handson_furniture.Furniture;
+import com.pockyl.handson_furniture.mixin.GeneratorAccess;
 
 /**
  * The rules of a piece of storage furniture. Its items stay in the furniture's own container, so hoppers, breaking it and the
@@ -31,8 +38,25 @@ public final class StorageLogic implements StationLogic {
     public static final String DOOR = "door";
     /** Which door or drawer, by its control ({@link Furniture#OPEN} without it). */
     public static final String CONTROL = "control";
+    /**
+     * Ticks the furniture's own shut waits after the click that shuts the last door: until then the scene's door is still on
+     * its way to the frame (the slowest, the fridge's, takes half a second). Shut at once, the furniture turned solid and dark
+     * inside while the player still saw it open.
+     */
+    public static final int SHUT_TICKS = 10;
+    /**
+     * The line a player at a freezer, microwave or stove switched on without power is shown: Refurbished runs them only on
+     * electricity, and its menu's sign of missing power is not there at the station.
+     */
+    public static final String NO_POWER = "message.handson_furniture.no_power";
+    /** The line for a microwave switched on with nothing in it that heats: it does not start (Refurbished heats few things). */
+    public static final String NOTHING_TO_HEAT = "message.handson_furniture.nothing_to_heat";
+    /** The line for a generator switched on with nothing on its grate that burns: it gives no power (its menu shows an empty bar). */
+    public static final String NO_FUEL = "message.handson_furniture.no_fuel";
 
     private final int size;
+    /** The game time the furniture's own shut is due at, or -1 when none waits. */
+    private long shutAt = -1L;
 
     public StorageLogic(StationContext station) {
         if (station.blockEntity() instanceof Container container) {
@@ -55,14 +79,32 @@ public final class StorageLogic implements StationLogic {
     @Override
     public void tick(StationContext station) {
         showPower(station);
+        if (shutAt >= 0L && station.level().getGameTime() >= shutAt) {
+            shut(station);
+        }
+    }
+
+    /** A player leaving does not wait for the door: a shut still due comes now, as the station may end with them. */
+    @Override
+    public void onClose(StationContext station, Player player) {
+        if (shutAt >= 0L) {
+            shut(station);
+        }
     }
 
     /**
      * The player flips the power switch: the furniture itself is switched, as its menu's power button does. The stove's own
-     * button also lights its hob, so it is pressed as that button.
+     * button also lights its hob, so it is pressed as that button; the generator has only that button.
      */
     @Override
     public void onControlChanged(StationContext station, Player player, String control, float value) {
+        if (Furniture.POWER.equals(control) && station.blockEntity() instanceof ElectricityGeneratorBlockEntity generator) {
+            // Switched on with too much linked to it, Refurbished leaves it off: the switch follows on the next tick.
+            if (isSwitchedOn(generator) != value > 0.5F) {
+                generator.togglePower();
+            }
+            return;
+        }
         if (Furniture.POWER.equals(control) && station.blockEntity() instanceof IHomeControlDevice device) {
             boolean on = value > 0.5F;
             if (device.isDeviceEnabled() != on) {
@@ -72,12 +114,44 @@ public final class StorageLogic implements StationLogic {
                     device.setDeviceState(on);
                 }
             }
+            // A microwave with power and nothing in it that heats does not start: its switch goes back, with a low beep.
+            if (on && device instanceof MicrowaveBlockEntity microwave && !lacksPower(microwave)
+                    && !ProcessingSlots.MICROWAVE.hasWork(microwave)) {
+                device.setDeviceState(false);
+                station.state().setControl(Furniture.POWER, 0.0F);
+                MicrowaveCycle.refuse(station.level(), station.pos());
+            }
         }
     }
 
+    /**
+     * Whether the furniture runs on electricity and gets none: Refurbished's freezer, microwave and stove do nothing, switched on
+     * or not, until a generator is linked to them. Its power is known on both sides (Refurbished sends it to clients).
+     */
+    public static boolean lacksPower(BlockEntity furniture) {
+        return furniture instanceof IModuleNode node && !node.isNodePowered();
+    }
+
+    /** Whether the furniture's door is open by hand at its station, as everyone sees it (its menu opens none). */
+    public static boolean isDoorOpen(BlockEntity furniture) {
+        return furniture instanceof StationHost host && host.stationState().schema().controls().containsKey(Furniture.OPEN)
+                && host.stationState().getControl(Furniture.OPEN) > 0.5F;
+    }
+
+    /**
+     * Whether the furniture is switched on by its power switch (Refurbished's own on and off), whether or not it runs: a generator
+     * may have no fuel, an appliance no power. False for furniture without one. Known on either side.
+     */
+    public static boolean isSwitchedOn(BlockEntity furniture) {
+        if (furniture instanceof GeneratorAccess generator) {
+            return generator.handson$isEnabled();
+        }
+        return furniture instanceof IHomeControlDevice device && device.isDeviceEnabled();
+    }
+
     private static void showPower(StationContext station) {
-        if (station.state().schema().controls().containsKey(Furniture.POWER) && station.blockEntity() instanceof IHomeControlDevice device) {
-            float shown = device.isDeviceEnabled() ? 1.0F : 0.0F;
+        if (station.state().schema().controls().containsKey(Furniture.POWER)) {
+            float shown = isSwitchedOn(station.blockEntity()) ? 1.0F : 0.0F;
             if (station.state().getControl(Furniture.POWER) != shown) {
                 station.state().setControl(Furniture.POWER, shown);
             }
@@ -89,7 +163,7 @@ public final class StorageLogic implements StationLogic {
         if (DOOR.equals(action)) {
             String control = data.contains(CONTROL) ? data.getString(CONTROL) : Furniture.OPEN;
             if (!Furniture.POWER.equals(control) && station.state().schema().controls().containsKey(control)) {
-                toggleDoor(station, control);
+                toggleDoor(station, player, control);
             }
             return;
         }
@@ -115,20 +189,38 @@ public final class StorageLogic implements StationLogic {
     /**
      * Opens a door or drawer, or shuts it, without counting a player as having it open, so it stays as it is left. The
      * furniture's own open and shut (its sound, and the open model the world shows where the station's scene is not drawn)
-     * come with the first that opens and the last that shuts.
+     * come with the first that opens and the last that shuts, once that one has met its frame ({@link #SHUT_TICKS}). Opened
+     * again before then, the furniture never shut and stays open. A mail box's front let down is its mail checked.
      */
-    private static void toggleDoor(StationContext station, String control) {
+    private void toggleDoor(StationContext station, Player player, String control) {
         boolean wasOpen = anyOpen(station);
         boolean open = station.state().getControl(control) < 0.5F;
         station.state().setControl(control, open ? 1.0F : 0.0F);
+        if (open && station.blockEntity() instanceof MailboxBlockEntity mailbox) {
+            MailDoor.opened(mailbox, station.level(), station.pos(), player);
+        }
         boolean isOpen = anyOpen(station);
-        if (wasOpen != isOpen && station.blockEntity() instanceof BasicLootBlockEntity furniture) {
+        if (wasOpen == isOpen) {
+            return;
+        }
+        if (!isOpen) {
+            shutAt = station.level().getGameTime() + SHUT_TICKS;
+        } else if (shutAt >= 0L) {
+            shutAt = -1L;
+        } else if (station.blockEntity() instanceof BasicLootBlockEntity furniture) {
+            furniture.onOpen(station.level(), station.pos(), station.level().getBlockState(station.pos()));
+        }
+    }
+
+    /** The furniture's own shut, its sound and its shut model, unless a door was opened again meanwhile. */
+    private void shut(StationContext station) {
+        shutAt = -1L;
+        if (!anyOpen(station) && station.blockEntity() instanceof MailboxBlockEntity) {
+            MailDoor.shut(station.level(), station.pos());
+        }
+        if (!anyOpen(station) && station.blockEntity() instanceof BasicLootBlockEntity furniture) {
             BlockState state = station.level().getBlockState(station.pos());
-            if (isOpen) {
-                furniture.onOpen(station.level(), station.pos(), state);
-            } else {
-                furniture.onClose(station.level(), station.pos(), state);
-            }
+            furniture.onClose(station.level(), station.pos(), state);
         }
     }
 

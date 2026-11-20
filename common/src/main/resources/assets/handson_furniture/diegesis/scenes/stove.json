@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/Pocky-l/diegesis/main/docs/schema/scene.schema.json",
-  "$comment": "Refurbished's stove, front to -z here (its facing names its back). The block is swapped for body (the stove with its oven hollowed out: dark enamel walls, a rack of bars across the middle; the hob as Refurbished has it) and door, Refurbished's own boxes and textures turned round. The oven door hangs on the line along its bottom where Refurbished hinges it (y 2, z 1 here); code lets it down. A click on the door opens or shuts it. Its window is clear: the oven shows through it. A heating element bent across the back wall, above and below the rack (element, ours), glows while the stove is lit and is dark otherwise. Items stand anywhere on the rack and on the oven's floor; Refurbished bakes three at a time. The rack is the first surface: what comes in without a place (a shift-click, a hopper) goes onto it, where the camera sees it; the back of the floor is hidden under the rack's front rail. The power knob (Refurbished's own on and off, its menu's power button) stands on the hob's front rim, bound to the control power: a click turns it a quarter round, on, and back, off (a toggle; a knob type would need it turned by circling the mouse). The camera stands at the front right, three-quarters and over the hob, far enough back that the door let down lies whole in the shot below the oven.",
+  "$comment": "Refurbished's stove, front to -z here (its facing names its back). The block is swapped for body (the stove with its oven hollowed out: dark enamel walls, a rack of bars across the middle; the hob as Refurbished has it) and door, Refurbished's own boxes and textures turned round. The oven door hangs on the line along its bottom where Refurbished hinges it (y 2, z 1 here); code lets it down. A click on the door opens or shuts it. Its window is clear: the oven shows through it. A heating element bent across the back wall, above and below the rack (element, ours), glows while the stove is lit and is dark otherwise. Items stand anywhere on the rack and on the oven's floor; Refurbished bakes three at a time. The rack is the first surface: what comes in without a place (a shift-click, a hopper) goes onto it, where the camera sees it; the back of the floor is hidden under the rack's front rail. The power knob (Refurbished's own on and off, its menu's power button) stands on the hob's front rim, bound to the control power: a click turns it a quarter round, on, and back, off (a toggle; a knob type would need it turned by circling the mouse). The camera stands at the front right, three-quarters and over the hob, far enough back that the door let down lies whole in the shot below the oven. An oven lamp on the side wall above the rack (light, ours) glows and lights the rack while the stove is lit.",
   "work_plane": 8,
   "idle_visible": true,
   "camera": {
@@ -190,6 +190,37 @@
         "range": [
           0,
           -90
+        ]
+      }
+    },
+    {
+      "id": "light",
+      "pos": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "pickable": false,
+      "hidden": true,
+      "visual": {
+        "model": "handson_furniture:diegesis/stove/light",
+        "tint": "#FFFFD98C",
+        "lit_as_block": true
+      },
+      "light": {
+        "level": 12,
+        "radius": 20,
+        "color": "#60FFD080",
+        "flicker": 0,
+        "offset": [
+          -6,
+          10,
+          -5
         ]
       }
     }

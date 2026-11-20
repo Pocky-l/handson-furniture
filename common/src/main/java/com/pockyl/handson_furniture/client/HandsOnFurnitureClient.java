@@ -29,6 +29,10 @@ public final class HandsOnFurnitureClient {
     private static final Turntable PLATE = new Turntable("plate", 0, new Vector3f(10.0F, 0.0F, 9.0F), 30.0F);
     /** How far the oven's door comes down, degrees about the line along its bottom: level, as Refurbished's open door lies. */
     private static final float OVEN_DOOR = 90.0F;
+    /** How far the generator's service panel swings out, degrees about its back edge: a little past square. */
+    private static final float GENERATOR_PANEL = -100.0F;
+    /** How far a mail box's front comes down, degrees about the line along its bottom: level, its inside up, as a tray. */
+    private static final float MAIL_BOX_FRONT = 90.0F;
     /** How far a drawer slides out, pixels (towards the front, -z in the scene). */
     private static final float DRAWER = -11.0F;
     /** How far the camera goes along with a drawer pulled all the way out: over the middle of its floor, the lower one's lower. */
@@ -48,6 +52,10 @@ public final class HandsOnFurnitureClient {
     private static final Motion MICROWAVE = new Motion(0.45F, 0.3F, 0.04F, 0.08F, 0.9F, 0.03F);
     /** An oven's heavy door on its springs: it gives, sinks down and settles level; pushed up, it thuds shut. */
     private static final Motion OVEN = new Motion(0.7F, 0.45F, 0.02F, 0.12F, 0.4F, 0.015F);
+    /** The generator's sheet-metal panel on its latch: it clicks free, swings out lightly and claps shut with a ring. */
+    private static final Motion PANEL = new Motion(0.45F, 0.3F, 0.03F, 0.08F, 1.0F, 0.035F);
+    /** A mail box's small wooden front on its catch: it gives, drops quickly onto its stop and rocks; lifted, it claps shut. */
+    private static final Motion MAIL_BOX = new Motion(0.4F, 0.28F, 0.04F, 0.1F, 0.6F, 0.03F);
     /** A drawer on runners: it glides out, recoils a little at the end stop, and knocks shut. */
     private static final Motion DRAWER_RUN = new Motion(0.45F, 0.35F, 0.0F, 0.0F, 1.1F, 0.025F);
 
@@ -69,6 +77,8 @@ public final class HandsOnFurnitureClient {
                 Part.drawer("tray_lower", "tray_lower", DRAWER, Furniture.OPEN_LOWER, FOLLOW_LOWER, 1)));
         behavior(Furniture.MICROWAVE, MICROWAVE, List.of(Part.door("door", "door", MICROWAVE_DOOR, new Vector3f())), PLATE);
         behavior(Furniture.STOVE, OVEN, List.of(Part.lid("door", "door", OVEN_DOOR)));
+        behavior(Furniture.GENERATOR, PANEL, List.of(Part.door("panel", "panel", GENERATOR_PANEL, new Vector3f())));
+        behavior(Furniture.MAIL_BOX, MAIL_BOX, List.of(Part.lid("door", "door", MAIL_BOX_FRONT)));
     }
 
     private static void behavior(Furniture furniture, Motion motion, List<Part> parts) {

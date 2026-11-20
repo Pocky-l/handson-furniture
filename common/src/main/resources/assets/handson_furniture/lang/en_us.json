@@ -1,0 +1,5 @@
+{
+  "message.handson_furniture.no_power": "No power: link it to an Electricity Generator with a Wrench",
+  "message.handson_furniture.nothing_to_heat": "Nothing in it heats in a microwave",
+  "message.handson_furniture.no_fuel": "No fuel: lay coal or another fuel on the grate"
+}

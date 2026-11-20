@@ -28,6 +28,8 @@ import com.pockyl.diegesis.api.state.StationSchema;
 import com.pockyl.diegesis.api.state.StationState;
 import com.pockyl.handson_furniture.Furniture;
 import com.pockyl.handson_furniture.HandsOnFurniture;
+import com.pockyl.handson_furniture.station.QuietChanges;
+import com.pockyl.handson_furniture.station.RoomyContainer;
 
 /**
  * Refurbished's storage furniture keeps its station's state: where each of its items stands, turned and sized. The items
@@ -40,10 +42,10 @@ import com.pockyl.handson_furniture.HandsOnFurniture;
  *
  * <p>Its container holds as many stacks as {@link Furniture#slots()} says, more than its menu has: what fits inside is a matter
  * of room on its shelves, not of slots. Hoppers reach the slots they always did; breaking it drops everything; a player without
- * the mod sees the menu's own slots.
+ * the mod sees the menu's own slots, and its shift-click and a comparator count those ({@link RoomyContainer}).
  */
 @Mixin(BasicLootBlockEntity.class)
-abstract class BasicLootBlockEntityMixin extends BlockEntity implements StationHost {
+abstract class BasicLootBlockEntityMixin extends BlockEntity implements StationHost, RoomyContainer {
     @Unique
     private static final String handson$KEY = HandsOnFurniture.MOD_ID;
 
@@ -59,6 +61,9 @@ abstract class BasicLootBlockEntityMixin extends BlockEntity implements StationH
     /** What was read before the state was first asked for: the block entity loads before its block state is known. */
     @Unique
     private CompoundTag handson$read;
+    /** The size Refurbished made the container with, before the room was added. */
+    @Unique
+    private int handson$ownSize;
 
     private BasicLootBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -67,12 +72,18 @@ abstract class BasicLootBlockEntityMixin extends BlockEntity implements StationH
     /** Made as large as the station's room: {@code load} makes its list as large as the size kept here. */
     @Inject(method = "<init>", at = @At("RETURN"))
     private void handson$roomy(BlockEntityType<?> type, BlockPos pos, BlockState state, int size, CallbackInfo info) {
+        handson$ownSize = containerSize;
         Furniture.of(state.getBlock()).ifPresent(furniture -> {
             if (furniture.slots() > containerSize) {
                 containerSize = furniture.slots();
                 items = NonNullList.withSize(containerSize, ItemStack.EMPTY);
             }
         });
+    }
+
+    @Override
+    public int handson$ownSize() {
+        return handson$ownSize;
     }
 
     @Override
@@ -108,12 +119,12 @@ abstract class BasicLootBlockEntityMixin extends BlockEntity implements StationH
     /**
      * Clients see what the furniture holds, whoever changed it: a hopper, a command or another mod reach them as a hand at the
      * station does. The game sends a block's update at most once a tick however often it is asked, so a hopper or a burst of
-     * changes costs no more than one packet a tick.
+     * changes costs no more than one packet a tick. A running generator's energy going down is not sent ({@link QuietChanges}).
      */
     @Override
     public void setChanged() {
         super.setChanged();
-        if (level != null && !level.isClientSide() && Furniture.of(getBlockState().getBlock()).isPresent()) {
+        if (level != null && !level.isClientSide() && !QuietChanges.isQuiet() && Furniture.of(getBlockState().getBlock()).isPresent()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
     }

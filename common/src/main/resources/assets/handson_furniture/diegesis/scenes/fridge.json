@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/Pocky-l/diegesis/main/docs/schema/scene.schema.json",
-  "$comment": "Refurbished's fridge, front to -z here (its facing names its back: the station turns the scene the other way). The block is swapped for body (the fridge hollowed out, with two shelves) and door, both Refurbished's own boxes and textures turned round; the door is hinged on the viewer's right at the corner where its back meets the fridge's front (x 0, z 3), so it stays against the fridge as it swings about 100 degrees open. A click on the door opens or shuts it (the station keeps it so). Items stand anywhere on the floor and shelves inside (surfaces 0-2) and in the door's three bins (3-5, written where the shut door has them; code turns them with the door). The camera faces the fridge from the front, a little to the left where the open door leaves the view free, and looks at its middle.",
+  "$comment": "Refurbished's fridge, front to -z here (its facing names its back: the station turns the scene the other way). The block is swapped for body (the fridge hollowed out, with two shelves) and door, both Refurbished's own boxes and textures turned round; the door is hinged on the viewer's right at the corner where its back meets the fridge's front (x 0, z 3), so it stays against the fridge as it swings about 100 degrees open. A click on the door opens or shuts it (the station keeps it so). Items stand anywhere on the floor and shelves inside (surfaces 0-2) and in the door's three bins (3-5, written where the shut door has them; code turns them with the door). The camera faces the fridge from the front, a little to the left where the open door leaves the view free, and looks at its middle. A strip of light runs down the inner side wall by the front (light, ours); with light_middle and light_low it lights each shelf's room. It comes on as the door leaves its seal and goes out just before it shuts, as a fridge's door switch does (code).",
   "work_plane": 8,
   "idle_visible": true,
   "camera": {
@@ -184,6 +184,89 @@
           16,
           0,
           13
+        ]
+      }
+    },
+    {
+      "id": "light",
+      "pos": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "pickable": false,
+      "hidden": true,
+      "visual": {
+        "model": "handson_furniture:diegesis/fridge/light",
+        "tint": "#FFF4FAFF",
+        "lit_as_block": true
+      },
+      "light": {
+        "level": 14,
+        "radius": 24,
+        "color": "#58E6F2FF",
+        "flicker": 0,
+        "offset": [
+          6,
+          13,
+          3.5
+        ]
+      }
+    },
+    {
+      "id": "light_middle",
+      "pos": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "pickable": false,
+      "hidden": true,
+      "light": {
+        "level": 14,
+        "radius": 24,
+        "color": "#58E6F2FF",
+        "flicker": 0,
+        "offset": [
+          6,
+          8,
+          3.5
+        ]
+      }
+    },
+    {
+      "id": "light_low",
+      "pos": [
+        8,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "pickable": false,
+      "hidden": true,
+      "light": {
+        "level": 14,
+        "radius": 24,
+        "color": "#58E6F2FF",
+        "flicker": 0,
+        "offset": [
+          6,
+          3,
+          3.5
         ]
       }
     }

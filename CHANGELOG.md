@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.2.0] - Unreleased
+## [1.2.0] - 2026-11-20
 - Electricity generators open by hand: fuel goes on the grate behind the side panel, a key switches them on and the screen shows the fuel left.
 - Mail boxes open by hand: the front comes down on the mail lying inside, and letting it down checks the mail.
 - A microwave heats only with its door shut, beeps as it starts and switches itself off when everything is heated.

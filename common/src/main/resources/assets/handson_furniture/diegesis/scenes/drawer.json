@@ -17,6 +17,9 @@
     "fov": 38,
     "interactive_at": 0.6
   },
+  "clear_view": {
+    "surface": "placing"
+  },
   "interface": {
     "hide_player": true,
     "inventory_panel": false,

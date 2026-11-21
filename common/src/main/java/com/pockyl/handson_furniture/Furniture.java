@@ -189,6 +189,45 @@ public enum Furniture {
         return hasWindow() || this == GENERATOR;
     }
 
+    /**
+     * Refurbished's sounds of its door, lid or drawer, {@code block.<name>.open} and {@code .close}: the cabinets share the
+     * cabinet's. Null for the generator, whose panel Refurbished gives no sound, and the mail box, which has none of its own
+     * ({@link com.pockyl.handson_furniture.station.MailDoor}).
+     */
+    public String doorSound() {
+        return switch (this) {
+            case KITCHEN_CABINET, STORAGE_CABINET -> "cabinet";
+            case GENERATOR, MAIL_BOX -> null;
+            default -> name;
+        };
+    }
+
+    /** The id of Refurbished's open or close sound of its door, lid or drawer ({@link #doorSound}), or null when it has none. */
+    @SuppressWarnings("removal")
+    public ResourceLocation doorSoundId(boolean open) {
+        String sound = doorSound();
+        return sound == null ? null : new ResourceLocation(REFURBISHED, "block." + sound + (open ? ".open" : ".close"));
+    }
+
+    /**
+     * Ticks from the click that shuts a door, lid or drawer to its close sound, so that the knock in the sound is heard as the
+     * scene's part meets the frame: 0.8 of the part's shutting time (the client's {@code Motion}) less how far into the sound
+     * its knock comes (fridge 80 ms, freezer 90, cabinet 10, cooler 15, drawer 235, kitchen drawer 205, microwave 70, oven 150,
+     * a wooden trapdoor's click at once), to the nearest tick, a late one when it is a tie: the sound and the change that starts
+     * the part moving reach every player in the same tick.
+     */
+    public int closeSoundTicks() {
+        return switch (this) {
+            case FRIDGE, FREEZER, KITCHEN_CABINET, STORAGE_CABINET -> 6;
+            case COOLER -> 5;
+            case DRAWER -> 1;
+            case KITCHEN_DRAWER -> 2;
+            case MICROWAVE -> 3;
+            case STOVE, MAIL_BOX -> 4;
+            case GENERATOR -> 0;
+        };
+    }
+
     /** Whether it has Refurbished's on and off: the freezer, the microwave, the stove and the generator. */
     public boolean hasPower() {
         return this == FREEZER || this == MICROWAVE || this == STOVE || this == GENERATOR;

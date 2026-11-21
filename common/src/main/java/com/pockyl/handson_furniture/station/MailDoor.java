@@ -34,11 +34,11 @@ public final class MailDoor {
         if (box != null && !box.hasOwner()) {
             box.setOwner(player.getUUID());
         }
-        level.playSound(null, pos, SoundEvents.WOODEN_TRAPDOOR_OPEN, SoundSource.BLOCKS, VOLUME, PITCH);
     }
 
-    /** The front met its frame. */
-    public static void shut(Level level, BlockPos pos) {
-        level.playSound(null, pos, SoundEvents.WOODEN_TRAPDOOR_CLOSE, SoundSource.BLOCKS, VOLUME, PITCH);
+    /** The front let down, or meeting its frame. */
+    static void sound(Level level, BlockPos pos, boolean open) {
+        level.playSound(null, pos, open ? SoundEvents.WOODEN_TRAPDOOR_OPEN : SoundEvents.WOODEN_TRAPDOOR_CLOSE, SoundSource.BLOCKS, VOLUME,
+                PITCH);
     }
 }

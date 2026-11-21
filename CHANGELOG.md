@@ -2,6 +2,8 @@
 
 ## [1.2.1] - 2026-11-21
 - Opening a chest of drawers or a kitchen drawer no longer hides the block standing on top of it.
+- Doors, lids and drawers knock shut as they meet the frame, not half a second later.
+- Each drawer of a chest of drawers or a kitchen drawer makes its own sound, also with the other one already out.
 - Needs [Diegesis](https://www.curseforge.com/minecraft/mc-mods/diegesis) 1.0.0-beta.15.
 
 ## [1.2.0] - 2026-11-20

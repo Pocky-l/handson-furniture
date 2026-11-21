@@ -157,6 +157,23 @@ public final class FurnitureTests {
         });
     }
 
+    /**
+     * Every piece with a sound of Refurbished's has it under the id its doors play (Refurbished's own open and close no longer
+     * sound at a station), and its close sound comes before the furniture's own shut.
+     */
+    public static void everyDoorHasItsSounds(GameTestHelper helper) {
+        for (Furniture furniture : Furniture.values()) {
+            for (boolean open : new boolean[] {true, false}) {
+                ResourceLocation id = furniture.doorSoundId(open);
+                helper.assertTrue(id == null || BuiltInRegistries.SOUND_EVENT.containsKey(id), furniture + ": no sound " + id);
+            }
+            helper.assertTrue(furniture.closeSoundTicks() < StorageLogic.SHUT_TICKS, furniture + ": the knock comes before the shut");
+        }
+        helper.assertTrue(Furniture.DRAWER.doorSoundId(false) != null && Furniture.GENERATOR.doorSoundId(true) == null,
+                "the chest of drawers sounds, the generator's panel has no sound of Refurbished's");
+        helper.succeed();
+    }
+
     /** A kitchen drawer's and a chest of drawers' two drawers open on their own; the block shows open while either is. */
     public static void theTwoDrawersOpenOnTheirOwn(GameTestHelper helper) {
         for (Furniture furniture : List.of(Furniture.KITCHEN_DRAWER, Furniture.DRAWER)) {

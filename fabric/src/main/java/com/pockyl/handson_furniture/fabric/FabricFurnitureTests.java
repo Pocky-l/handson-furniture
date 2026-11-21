@@ -39,6 +39,11 @@ public final class FabricFurnitureTests implements FabricGameTest {
     }
 
     @GameTest(template = FabricGameTest.EMPTY_STRUCTURE)
+    public void everyDoorHasItsSounds(GameTestHelper helper) {
+        FurnitureTests.everyDoorHasItsSounds(helper);
+    }
+
+    @GameTest(template = FabricGameTest.EMPTY_STRUCTURE)
     public void theTwoDrawersOpenOnTheirOwn(GameTestHelper helper) {
         FurnitureTests.theTwoDrawersOpenOnTheirOwn(helper);
     }

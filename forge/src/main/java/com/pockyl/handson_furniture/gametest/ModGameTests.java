@@ -45,6 +45,11 @@ public final class ModGameTests {
     }
 
     @GameTest(template = "empty")
+    public static void everyDoorHasItsSounds(GameTestHelper helper) {
+        FurnitureTests.everyDoorHasItsSounds(helper);
+    }
+
+    @GameTest(template = "empty")
     public static void theTwoDrawersOpenOnTheirOwn(GameTestHelper helper) {
         FurnitureTests.theTwoDrawersOpenOnTheirOwn(helper);
     }

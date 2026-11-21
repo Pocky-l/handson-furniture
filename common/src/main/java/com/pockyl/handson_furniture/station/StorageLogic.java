@@ -5,8 +5,11 @@ import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 
 import com.mrcrayfish.furniture.refurbished.blockentity.BasicLootBlockEntity;
 import com.mrcrayfish.furniture.refurbished.blockentity.ElectricityGeneratorBlockEntity;
@@ -24,10 +27,14 @@ import com.pockyl.diegesis.api.station.StationLogic;
 import com.pockyl.handson_furniture.Furniture;
 import com.pockyl.handson_furniture.mixin.GeneratorAccess;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 /**
  * The rules of a piece of storage furniture. Its items stay in the furniture's own container, so hoppers, breaking it and the
  * menu of a player without the mod all go on working; the station only keeps where each item stands. Its door (or drawer) is
- * opened and shut by a click on it, with the furniture's own sound and look, and stays as it was left: a door left open is
+ * opened and shut by a click on it, with the furniture's own sounds and look, and stays as it was left: a door left open is
  * open for everyone, also once the player has gone.
  */
 public final class StorageLogic implements StationLogic {
@@ -54,9 +61,14 @@ public final class StorageLogic implements StationLogic {
     /** The line for a generator switched on with nothing on its grate that burns: it gives no power (its menu shows an empty bar). */
     public static final String NO_FUEL = "message.handson_furniture.no_fuel";
 
+    /** The name of Refurbished's block property that says its door is open (or its drawer out, its lid up). */
+    private static final String OPEN_PROPERTY = "open";
+
     private final int size;
     /** The game time the furniture's own shut is due at, or -1 when none waits. */
     private long shutAt = -1L;
+    /** Per door or drawer on its way shut, the game time its close sound is due at. */
+    private final Map<String, Long> closeSoundAt = new HashMap<>();
 
     public StorageLogic(StationContext station) {
         if (station.blockEntity() instanceof Container container) {
@@ -79,14 +91,16 @@ public final class StorageLogic implements StationLogic {
     @Override
     public void tick(StationContext station) {
         showPower(station);
+        knock(station, false);
         if (shutAt >= 0L && station.level().getGameTime() >= shutAt) {
             shut(station);
         }
     }
 
-    /** A player leaving does not wait for the door: a shut still due comes now, as the station may end with them. */
+    /** A player leaving does not wait for the door: a close sound or shut still due comes now, as the station may end with them. */
     @Override
     public void onClose(StationContext station, Player player) {
+        knock(station, true);
         if (shutAt >= 0L) {
             shut(station);
         }
@@ -187,10 +201,12 @@ public final class StorageLogic implements StationLogic {
     }
 
     /**
-     * Opens a door or drawer, or shuts it, without counting a player as having it open, so it stays as it is left. The
-     * furniture's own open and shut (its sound, and the open model the world shows where the station's scene is not drawn)
-     * come with the first that opens and the last that shuts, once that one has met its frame ({@link #SHUT_TICKS}). Opened
-     * again before then, the furniture never shut and stays open. A mail box's front let down is its mail checked.
+     * Opens a door or drawer, or shuts it, without counting a player as having it open, so it stays as it is left. Each part
+     * sounds on its own: Refurbished's open sound with the click, its close sound as the part meets the frame
+     * ({@link Furniture#closeSoundTicks}). The furniture's own open and shut (the open model the world shows where the station's
+     * scene is not drawn, and the light inside) come with the first that opens and the last that shuts, once that one has met
+     * its frame ({@link #SHUT_TICKS}). Opened again before then, the furniture never shut and stays open. A mail box's front let
+     * down is its mail checked.
      */
     private void toggleDoor(StationContext station, Player player, String control) {
         boolean wasOpen = anyOpen(station);
@@ -198,6 +214,16 @@ public final class StorageLogic implements StationLogic {
         station.state().setControl(control, open ? 1.0F : 0.0F);
         if (open && station.blockEntity() instanceof MailboxBlockEntity mailbox) {
             MailDoor.opened(mailbox, station.level(), station.pos(), player);
+        }
+        Furniture furniture = furniture(station);
+        if (open) {
+            // Pulled open again on its way shut, it never met the frame.
+            closeSoundAt.remove(control);
+            if (furniture != null) {
+                DoorSounds.play(furniture, station.level(), station.pos(), true);
+            }
+        } else if (furniture != null) {
+            closeSoundAt.put(control, station.level().getGameTime() + furniture.closeSoundTicks());
         }
         boolean isOpen = anyOpen(station);
         if (wasOpen == isOpen) {
@@ -207,21 +233,66 @@ public final class StorageLogic implements StationLogic {
             shutAt = station.level().getGameTime() + SHUT_TICKS;
         } else if (shutAt >= 0L) {
             shutAt = -1L;
-        } else if (station.blockEntity() instanceof BasicLootBlockEntity furniture) {
-            furniture.onOpen(station.level(), station.pos(), station.level().getBlockState(station.pos()));
+        } else {
+            showOpen(station, furniture, true);
         }
     }
 
-    /** The furniture's own shut, its sound and its shut model, unless a door was opened again meanwhile. */
+    /** The close sounds due by now: each part's as it meets the frame; all that wait with {@code all}. */
+    private void knock(StationContext station, boolean all) {
+        if (closeSoundAt.isEmpty()) {
+            return;
+        }
+        Furniture furniture = furniture(station);
+        long now = station.level().getGameTime();
+        Iterator<Map.Entry<String, Long>> due = closeSoundAt.entrySet().iterator();
+        while (due.hasNext()) {
+            Map.Entry<String, Long> entry = due.next();
+            if (all || now >= entry.getValue()) {
+                due.remove();
+                if (furniture != null) {
+                    DoorSounds.play(furniture, station.level(), station.pos(), false);
+                }
+            }
+        }
+    }
+
+    /** The furniture's own shut, its shut model, unless a door was opened again meanwhile. */
     private void shut(StationContext station) {
         shutAt = -1L;
-        if (!anyOpen(station) && station.blockEntity() instanceof MailboxBlockEntity) {
-            MailDoor.shut(station.level(), station.pos());
+        if (!anyOpen(station)) {
+            showOpen(station, furniture(station), false);
         }
-        if (!anyOpen(station) && station.blockEntity() instanceof BasicLootBlockEntity furniture) {
-            BlockState state = station.level().getBlockState(station.pos());
-            furniture.onClose(station.level(), station.pos(), state);
+    }
+
+    /**
+     * Refurbished's open or shut look of the furniture, without its sound: the parts make their own. Refurbished's open and close
+     * play the sound and set the block's {@code open}; a piece without a sound of Refurbished's (the generator, the mail box) has
+     * them called as before.
+     */
+    private static void showOpen(StationContext station, Furniture furniture, boolean open) {
+        BlockState state = station.level().getBlockState(station.pos());
+        if (furniture != null && furniture.doorSound() != null) {
+            for (Property<?> property : state.getProperties()) {
+                if (property instanceof BooleanProperty flag && OPEN_PROPERTY.equals(flag.getName())) {
+                    if (state.getValue(flag) != open) {
+                        station.level().setBlock(station.pos(), state.setValue(flag, open), Block.UPDATE_ALL);
+                    }
+                    return;
+                }
+            }
         }
+        if (station.blockEntity() instanceof BasicLootBlockEntity loot) {
+            if (open) {
+                loot.onOpen(station.level(), station.pos(), state);
+            } else {
+                loot.onClose(station.level(), station.pos(), state);
+            }
+        }
+    }
+
+    private static Furniture furniture(StationContext station) {
+        return Furniture.of(station.level().getBlockState(station.pos()).getBlock()).orElse(null);
     }
 
     private static boolean anyOpen(StationContext station) {

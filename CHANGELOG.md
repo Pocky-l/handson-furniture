@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1+1.21.1] - 2026-11-21
+- Opening a chest of drawers or a kitchen drawer no longer hides the block standing on top of it.
+- Needs [Diegesis](https://www.curseforge.com/minecraft/mc-mods/diegesis) 1.0.0-beta.15.
+
 ## [1.2.0+1.21.1] - 2026-11-20
 - Electricity generators open by hand: fuel goes on the grate behind the side panel, a key switches them on and the screen shows the fuel left.
 - Mail boxes open by hand: the front comes down on the mail lying inside, and letting it down checks the mail.

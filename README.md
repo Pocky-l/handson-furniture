@@ -179,6 +179,10 @@ The jars are written to `forge/build/libs/` and `fabric/build/libs/` (on the `1.
     <td><a href="https://www.curseforge.com/minecraft/mc-mods/hands-on-delight"><b>Hands-On Delight</b></a> - cook in Farmer's Delight with your own hands, right on its blocks (<a href="https://github.com/Pocky-l/handson-delight">source</a>)</td>
   </tr>
   <tr>
+    <td width="56"><a href="https://www.curseforge.com/minecraft/mc-mods/hands-on-lets-do"><img src="docs/more-mods/handson_letsdo.png" width="48" alt="Hands-On Let's Do"></a></td>
+    <td><a href="https://www.curseforge.com/minecraft/mc-mods/hands-on-lets-do"><b>Hands-On Let's Do</b></a> - work at the Let's Do stations with your own hands, right where they stand (<a href="https://github.com/Pocky-l/handson-letsdo">source</a>)</td>
+  </tr>
+  <tr>
     <td width="56"><a href="https://www.curseforge.com/minecraft/mc-mods/hands-on-vanilla"><img src="docs/more-mods/handson_vanilla.png" width="48" alt="Hands-On Vanilla"></a></td>
     <td><a href="https://www.curseforge.com/minecraft/mc-mods/hands-on-vanilla"><b>Hands-On Vanilla</b></a> - craft and smelt with your own hands, right on the crafting table and the furnace, client-side (<a href="https://github.com/Pocky-l/handson-vanilla">source</a>)</td>
   </tr>

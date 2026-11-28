@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.2.1+1.21.11] - Unreleased
+## [1.2.1+1.21.11] - 2026-11-28
 - First version for Minecraft 1.21.11, on NeoForge and Fabric, with all the furniture of 1.2.1.
 - Needs [MrCrayfish's Furniture Mod: Refurbished](https://www.curseforge.com/minecraft/mc-mods/refurbished-furniture) 1.0.23 and [Diegesis](https://www.curseforge.com/minecraft/mc-mods/diegesis) 1.0.0-beta.19.4.
 

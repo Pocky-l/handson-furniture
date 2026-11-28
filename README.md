@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://www.curseforge.com/minecraft/mc-mods/hands-on-furniture"><img alt="CurseForge" src="https://img.shields.io/badge/CurseForge-Hands--On%20Furniture-F16436"></a>
-  <a href="https://www.curseforge.com/minecraft/mc-mods/hands-on-furniture/files"><img alt="Minecraft 1.20.1 and 1.21.1" src="https://img.shields.io/badge/Minecraft-1.20.1%20%7C%201.21.1-62B47A"></a>
+  <a href="https://www.curseforge.com/minecraft/mc-mods/hands-on-furniture/files"><img alt="Minecraft 1.20.1, 1.21.1, 1.21.11, 26.1.2 and 26.2" src="https://img.shields.io/badge/Minecraft-1.20.1%20%7C%201.21.1%20%7C%201.21.11%20%7C%2026.1.2%20%7C%2026.2-62B47A"></a>
   <a href="https://files.minecraftforge.net"><img alt="Forge" src="https://img.shields.io/badge/Loader-Forge-DFA86A"></a>
   <a href="https://neoforged.net"><img alt="NeoForge" src="https://img.shields.io/badge/Loader-NeoForge-E68C37"></a>
   <a href="https://fabricmc.net"><img alt="Fabric" src="https://img.shields.io/badge/Loader-Fabric-DBD0B4"></a>
@@ -82,8 +82,8 @@ built on [Diegesis](https://www.curseforge.com/minecraft/mc-mods/diegesis), from
 
 ## Installation
 
-1. Minecraft 1.20.1 with [Forge](https://files.minecraftforge.net), Minecraft 1.21.1 with
-   [NeoForge](https://neoforged.net), or either of them with [Fabric](https://fabricmc.net) and
+1. Minecraft 1.20.1 with [Forge](https://files.minecraftforge.net); Minecraft 1.21.1, 1.21.11, 26.1.2 or 26.2 with
+   [NeoForge](https://neoforged.net); or any of them with [Fabric](https://fabricmc.net) and
    [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api).
 2. [MrCrayfish's Furniture Mod: Refurbished](https://www.curseforge.com/minecraft/mc-mods/refurbished-furniture),
    [Diegesis](https://www.curseforge.com/minecraft/mc-mods/diegesis) and this mod in the `mods` folder of the server and
@@ -98,7 +98,8 @@ our Discord server.
 ./gradlew build
 ```
 
-The jars are written to `forge/build/libs/` and `fabric/build/libs/` (on the `1.21.1` branch `neoforge/` and `fabric/`).
+The jars are written to `forge/build/libs/` and `fabric/build/libs/`. The other Minecraft versions have a branch each
+(`1.21.1`, `1.21.11`, `26.1.2`, `26.2`), built the same way into `neoforge/` and `fabric/`.
 
 ## Credits
 

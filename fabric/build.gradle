@@ -10,7 +10,7 @@ dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
-    // The API is in Diegesis' common jar; the Fabric jar of the library plays in the playtest client (playtest-26.1.2-fabric).
+    // The API is in Diegesis' common jar; the Fabric jar of the library plays in the playtest client (playtest-26.2-fabric).
     compileOnly "com.pockyl.diegesis:common:${diegesis_version}"
     compileOnly "curse.maven:refurbished-furniture-897116:${refurbished_furniture_fabric_file}"
 }
@@ -40,7 +40,7 @@ dependencies {
     gameTestMods "curse.maven:framework-549225:${framework_fabric_file}"
     gameTestMods "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
     // Not in the fabric-api jar: the module that runs the tests (the version fabric-api's POM names).
-    gameTestMods 'net.fabricmc.fabric-api:fabric-gametest-api-v1:4.0.18+867b87624c'
+    gameTestMods 'net.fabricmc.fabric-api:fabric-gametest-api-v1:4.0.22+4a7fa0819e'
 }
 
 // The game tests of common on a production Fabric server with the release jars of this mod, Diegesis and Refurbished:

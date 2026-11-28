@@ -19,7 +19,7 @@ import com.pockyl.handson_furniture.HandsOnFurniture;
 import java.util.List;
 import java.util.function.Consumer;
 
-/** {@link FurnitureTests} on NeoForge: each a function and a test instance on vanilla's empty structure. */
+/** {@link FurnitureTests} on NeoForge: each a function and a test instance on this mod's 1x1x1 empty structure. */
 public final class NeoForgeGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION,
             HandsOnFurniture.MOD_ID);
@@ -40,12 +40,12 @@ public final class NeoForgeGameTests {
     }
 
     private static void registerTests(RegisterGameTestsEvent event) {
-        Holder<TestEnvironmentDefinition> environment = event.registerEnvironment(HandsOnFurniture.id("default"),
+        Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(HandsOnFurniture.id("default"),
                 new TestEnvironmentDefinition.AllOf(List.of()));
         for (FurnitureTests.Test test : FurnitureTests.TESTS) {
             Identifier id = HandsOnFurniture.id(test.name());
-            TestData<Holder<TestEnvironmentDefinition>> data = new TestData<>(environment, Identifier.withDefaultNamespace("empty"),
-                    test.timeout(), 0, true, Rotation.NONE, false, 1, 1, false);
+            TestData<Holder<TestEnvironmentDefinition<?>>> data = new TestData<>(environment, HandsOnFurniture.id("empty"),
+                    test.timeout(), 0, true, Rotation.NONE, false, 1, 1, false, 0);
             event.registerTest(id, new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, id), data));
         }
     }

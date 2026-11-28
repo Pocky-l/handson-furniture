@@ -2,6 +2,7 @@ package com.pockyl.handson_furniture.mixin;
 
 import com.mrcrayfish.furniture.refurbished.blockentity.ElectricityGeneratorBlockEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -41,7 +42,8 @@ abstract class ElectricityGeneratorBlockEntityMixin {
         ItemStack fuel = generator.getItem(0);
         handson$item = System.identityHashCode(fuel.getItem());
         handson$count = fuel.getCount();
-        handson$leaves = fuel.isEmpty() ? ItemStack.EMPTY : fuel.getItem().getCraftingRemainder();
+        ItemStackTemplate remainder = fuel.isEmpty() ? null : fuel.getItem().getCraftingRemainder();
+        handson$leaves = remainder != null ? remainder.create() : ItemStack.EMPTY;
     }
 
     @Inject(method = "earlyNodeTick", at = @At("TAIL"), remap = false)

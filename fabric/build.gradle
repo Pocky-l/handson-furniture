@@ -1,20 +1,18 @@
 plugins {
     id 'multiloader-loader'
-    id 'fabric-loom'
+    id 'net.fabricmc.fabric-loom'
 }
+
+// Minecraft 26.x is unobfuscated: no mappings and no remapping, so mods are plain implementation dependencies and the jar
+// task builds the release file.
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
-    mappings loom.layered {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${parchment_minecraft_version}:${parchment_mappings_version}@zip")
-    }
-    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
-    // The API is in Diegesis' common jar, in Mojang names like this project; the Fabric jar of the library plays in
-    // the playtest client (playtest-1.21.11-fabric).
+    implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+    // The API is in Diegesis' common jar; the Fabric jar of the library plays in the playtest client (playtest-26.1.2-fabric).
     compileOnly "com.pockyl.diegesis:common:${diegesis_version}"
-    modCompileOnly "curse.maven:refurbished-furniture-897116:${refurbished_furniture_fabric_file}"
+    compileOnly "curse.maven:refurbished-furniture-897116:${refurbished_furniture_fabric_file}"
 }
 
 loom {
@@ -42,21 +40,19 @@ dependencies {
     gameTestMods "curse.maven:framework-549225:${framework_fabric_file}"
     gameTestMods "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
     // Not in the fabric-api jar: the module that runs the tests (the version fabric-api's POM names).
-    gameTestMods 'net.fabricmc.fabric-api:fabric-gametest-api-v1:3.1.27+4fc5413f3e'
+    gameTestMods 'net.fabricmc.fabric-api:fabric-gametest-api-v1:4.0.18+867b87624c'
 }
 
 // The game tests of common on a production Fabric server with the release jars of this mod, Diegesis and Refurbished:
 // gradlew :fabric:runGameTest. They need no client and no development run.
 tasks.register('runGameTest', net.fabricmc.loom.task.prod.ServerProductionRunTask) {
     group = 'fabric'
-    dependsOn gradle.includedBuild('diegesis').task(':fabric:remapJar')
-    mods.from(tasks.named('remapJar'))
+    dependsOn gradle.includedBuild('diegesis').task(':fabric:jar')
+    mods.from(tasks.named('jar'))
     mods.from(configurations.gameTestMods)
     mods.from(file("../../diegesis/fabric/build/libs/diegesis-fabric-${minecraft_version}-${diegesis_version}.jar"))
     installerVersion = '1.1.0'
     jvmArgs.add('-Dfabric-api.gametest')
-    // Each test by name and how it went: run-gametest/report.xml.
-    jvmArgs.add("-Dfabric-api.gametest.report-file=${file('run-gametest/report.xml').absolutePath}".toString())
     runDir = file('run-gametest')
     def eula = file('run-gametest/eula.txt')
     doFirst {
@@ -87,7 +83,7 @@ tasks.named('processResources', ProcessResources) {
 }
 
 publishMods {
-    file = tasks.named('remapJar').flatMap { it.archiveFile }
+    file = tasks.named('jar').flatMap { it.archiveFile }
     displayName = "${mod_name} ${mod_version}+${minecraft_version} (Fabric)"
     modLoaders.add('fabric')
 }

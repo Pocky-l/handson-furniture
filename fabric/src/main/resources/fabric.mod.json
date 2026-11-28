@@ -22,7 +22,7 @@
     "fabricloader": ">=${fabric_loader_version}",
     "fabric-api": ">=${fabric_api_version}",
     "minecraft": "${minecraft_version}",
-    "java": ">=21",
+    "java": ">=25",
     "diegesis": ">=${diegesis_version}",
     "refurbished_furniture": ">=${refurbished_furniture_min_version}"
   }

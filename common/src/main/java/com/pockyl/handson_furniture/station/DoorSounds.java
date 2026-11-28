@@ -32,6 +32,6 @@ final class DoorSounds {
             return;
         }
         BuiltInRegistries.SOUND_EVENT.getOptional(id).ifPresent(sound -> level.playSound(null, pos, sound, SoundSource.BLOCKS, VOLUME,
-                PITCH + PITCH_SPREAD * level.random.nextFloat()));
+                PITCH + PITCH_SPREAD * level.getRandom().nextFloat()));
     }
 }

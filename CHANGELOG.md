@@ -1,7 +1,8 @@
 # Changelog
 
-## [1.2.1+1.21.11] - Unreleased
-- First version for Minecraft 1.21.11, on NeoForge and Fabric, with all the furniture of 1.2.1.
+## [1.2.1+26.1.2] - Unreleased
+- First version for Minecraft 26.1.2, on NeoForge and Fabric, with all the furniture of 1.2.1.
+- Freezing a water bucket keeps the empty bucket in the freezer, as on the other versions.
 - Needs [MrCrayfish's Furniture Mod: Refurbished](https://www.curseforge.com/minecraft/mc-mods/refurbished-furniture) 1.0.23 and [Diegesis](https://www.curseforge.com/minecraft/mc-mods/diegesis) 1.0.0-beta.19.4.
 
 ## [1.2.1+1.21.1] - 2026-11-21

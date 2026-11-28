@@ -202,7 +202,7 @@ public enum ProcessingSlots {
         }
         SingleRecipeInput recipeInput = new SingleRecipeInput(input);
         return server.recipeAccess().getRecipeFor(type, recipeInput, server)
-                .map(holder -> holder.value().assemble(recipeInput, server.registryAccess())).orElse(ItemStack.EMPTY);
+                .map(holder -> holder.value().assemble(recipeInput)).orElse(ItemStack.EMPTY);
     }
 
     /** Whether {@code result} can be added to {@code output}, as Refurbished adds it. */

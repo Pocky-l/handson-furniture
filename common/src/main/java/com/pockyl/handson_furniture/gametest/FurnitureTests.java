@@ -6,7 +6,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -19,6 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueInput;
 import org.joml.Quaternionf;
 
 import com.mrcrayfish.furniture.refurbished.blockentity.IHomeControlDevice;
@@ -46,14 +48,52 @@ import com.pockyl.handson_furniture.station.StorageLogic;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * The furniture as stations on the server: every variant Refurbished makes opens one, the station's slots are the furniture's
  * own, where each item stands is saved with the block, and a shift-click stores as the furniture's menu would. The same on
- * every loader: each registers them in its own way ({@code ModGameTests} on NeoForge, {@code FabricFurnitureTests} on Fabric).
+ * every loader: each registers {@link #TESTS} in its own way ({@code NeoForgeGameTests} on NeoForge, {@code FabricFurnitureTests}
+ * on Fabric). Tests are registry entries since Minecraft 1.21.5: a function and a test instance on vanilla's empty structure each.
  */
 public final class FurnitureTests {
     private static final BlockPos AT = new BlockPos(1, 1, 1);
+
+    /** A test: its name (snake case, as test instances are named), how many ticks it may take, and what it does. */
+    public record Test(String name, int timeout, Consumer<GameTestHelper> function) {
+    }
+
+    /** Every test, for the loaders to register. */
+    public static final List<Test> TESTS = List.of(
+            new Test("every_variant_is_a_station", 100, FurnitureTests::everyVariantIsAStation),
+            new Test("slots_are_the_furnitures_own", 100, FurnitureTests::slotsAreTheFurnituresOwn),
+            new Test("room_past_the_menu_is_kept_and_dropped", 100, FurnitureTests::roomPastTheMenuIsKeptAndDropped),
+            new Test("what_falls_out_goes_to_the_inventory_else_the_floor", 100, FurnitureTests::whatFallsOutGoesToTheInventoryElseTheFloor),
+            new Test("places_are_saved_with_the_block", 100, FurnitureTests::placesAreSavedWithTheBlock),
+            new Test("a_click_opens_the_door_and_it_stays_open", 100, FurnitureTests::aClickOpensTheDoorAndItStaysOpen),
+            new Test("every_door_has_its_sounds", 100, FurnitureTests::everyDoorHasItsSounds),
+            new Test("the_two_drawers_open_on_their_own", 100, FurnitureTests::theTwoDrawersOpenOnTheirOwn),
+            new Test("a_coolers_lid_lifts_and_it_holds_more_than_a_row", 100, FurnitureTests::aCoolersLidLiftsAndItHoldsMoreThanARow),
+            new Test("the_wrench_uses_the_block_as_before", 100, FurnitureTests::theWrenchUsesTheBlockAsBefore),
+            new Test("what_freezes_goes_where_the_freezer_freezes", 100, FurnitureTests::whatFreezesGoesWhereTheFreezerFreezes),
+            new Test("the_freezers_switch_is_its_power", 100, FurnitureTests::theFreezersSwitchIsItsPower),
+            new Test("what_heats_goes_where_the_microwave_heats", 100, FurnitureTests::whatHeatsGoesWhereTheMicrowaveHeats),
+            new Test("three_things_bake_at_once_in_the_oven", 100, FurnitureTests::threeThingsBakeAtOnceInTheOven),
+            new Test("the_stoves_knob_is_its_power", 100, FurnitureTests::theStovesKnobIsItsPower),
+            new Test("clients_are_told_of_an_open_door", 100, FurnitureTests::clientsAreToldOfAnOpenDoor),
+            new Test("an_emptied_slot_forgets_its_place", 100, FurnitureTests::anEmptiedSlotForgetsItsPlace),
+            new Test("a_shift_click_merges_then_fills", 100, FurnitureTests::aShiftClickMergesThenFills),
+            new Test("a_full_drawer_leaves_the_rest", 100, FurnitureTests::aFullDrawerLeavesTheRest),
+            new Test("a_powered_freezer_freezes_what_stands_anywhere", 900, FurnitureTests::aPoweredFreezerFreezesWhatStandsAnywhere),
+            new Test("a_powered_microwave_heats_what_stands_on_the_plate", 400, FurnitureTests::aPoweredMicrowaveHeatsWhatStandsOnThePlate),
+            new Test("lamps_light_the_room", 100, FurnitureTests::lampsLightTheRoom),
+            new Test("a_microwave_heats_only_with_its_door_shut_and_lights_the_room", 700, FurnitureTests::aMicrowaveHeatsOnlyWithItsDoorShutAndLightsTheRoom),
+            new Test("a_microwave_switches_itself_off_when_done", 700, FurnitureTests::aMicrowaveSwitchesItselfOffWhenDone),
+            new Test("a_right_click_puts_one_down", 100, FurnitureTests::aRightClickPutsOneDown),
+            new Test("a_generator_burns_fuel_lying_anywhere", 100, FurnitureTests::aGeneratorBurnsFuelLyingAnywhere),
+            new Test("a_generator_moves_the_empty_bucket_aside", 100, FurnitureTests::aGeneratorMovesTheEmptyBucketAside),
+            new Test("a_mail_boxs_front_checks_the_mail", 100, FurnitureTests::aMailBoxsFrontChecksTheMail),
+            new Test("menus_and_comparators_count_refurbisheds_slots", 100, FurnitureTests::menusAndComparatorsCountRefurbishedsSlots));
 
     private FurnitureTests() {
     }
@@ -109,8 +149,8 @@ public final class FurnitureTests {
                 StationAction.ClickKind.SPILL));
         helper.assertTrue(station.state().getItem(apple).isEmpty() && player.getInventory().countItem(Items.APPLE) == 3,
                 "with room, it falls into the inventory");
-        for (int i = 0; i < player.getInventory().items.size(); i++) {
-            player.getInventory().items.set(i, new ItemStack(Items.STONE, 64));
+        for (int i = 0; i < player.getInventory().getNonEquipmentItems().size(); i++) {
+            player.getInventory().getNonEquipmentItems().set(i, new ItemStack(Items.STONE, 64));
         }
         station.state().setItem(apple, new ItemStack(Items.APPLE, 2));
         ActionHandler.apply(station, logic, player, new StationAction.Click(new StationAction.Target.Station(apple), 0,
@@ -168,7 +208,7 @@ public final class FurnitureTests {
     public static void everyDoorHasItsSounds(GameTestHelper helper) {
         for (Furniture furniture : Furniture.values()) {
             for (boolean open : new boolean[] {true, false}) {
-                ResourceLocation id = furniture.doorSoundId(open);
+                Identifier id = furniture.doorSoundId(open);
                 helper.assertTrue(id == null || BuiltInRegistries.SOUND_EVENT.containsKey(id), furniture + ": no sound " + id);
             }
             helper.assertTrue(furniture.closeSoundTicks() < StorageLogic.SHUT_TICKS, furniture + ": the knock comes before the shut");
@@ -209,7 +249,7 @@ public final class FurnitureTests {
         helper.assertTrue(station.state().getControl(Furniture.OPEN) == 1.0F && isOpenBlock(station), "a click lifts the lid");
         Container cooler = (Container) station.blockEntity();
         for (int i = 0; i < 12; i++) {
-            player.getInventory().items.set(0, new ItemStack(i % 2 == 0 ? Items.MELON_SLICE : Items.COOKIE, 64));
+            player.getInventory().getNonEquipmentItems().set(0, new ItemStack(i % 2 == 0 ? Items.MELON_SLICE : Items.COOKIE, 64));
             CompoundTag data = new CompoundTag();
             data.putInt(StorageLogic.SLOT, 0);
             logic.onCustomAction(station, player, StorageLogic.STORE, data);
@@ -227,7 +267,7 @@ public final class FurnitureTests {
         Player player = helper.makeMockPlayer(GameType.CREATIVE);
         StationType.OpenCondition condition = Furniture.FREEZER.type().openCondition();
         helper.assertTrue(condition.test(player, station.pos(), station.blockState()), "an empty hand opens the freezer");
-        Item wrench = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(Furniture.REFURBISHED, "wrench"));
+        Item wrench = BuiltInRegistries.ITEM.getValue(Identifier.fromNamespaceAndPath(Furniture.REFURBISHED, "wrench"));
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(wrench));
         helper.assertTrue(!condition.test(player, station.pos(), station.blockState()), "the wrench is left to link it");
         helper.succeed();
@@ -600,7 +640,7 @@ public final class FurnitureTests {
         logic.onCustomAction(station, player, StorageLogic.DOOR, new CompoundTag());
         helper.assertTrue(station.state().getControl(Furniture.OPEN) == 1.0F, "a click lets the front down");
         helper.assertTrue(!flag(station.blockState(), "enabled"), "and the flag goes down");
-        Mailbox box = mailbox.getMailbox();
+        Mailbox box = mailbox.getMailbox().orElse(null);
         helper.assertTrue(box == null || box.hasOwner(), "the mail box is the player's");
         logic.onCustomAction(station, player, StorageLogic.DOOR, new CompoundTag());
         helper.assertTrue(station.state().getControl(Furniture.OPEN) == 0.0F, "another click shuts it");
@@ -616,12 +656,12 @@ public final class FurnitureTests {
         TestStation generator = place(helper, Furniture.GENERATOR);
         Container fuel = (Container) generator.blockEntity();
         Player player = helper.makeMockPlayer(GameType.CREATIVE);
-        player.getInventory().items.set(0, new ItemStack(Items.COAL, 5));
+        player.getInventory().getNonEquipmentItems().set(0, new ItemStack(Items.COAL, 5));
         ElectricityGeneratorMenu menu = new ElectricityGeneratorMenu(0, player.getInventory(), fuel, new SimpleContainerData(6));
         // The menu's slots: the generator's one, then the player's 27 and their hotbar.
         menu.quickMoveStack(player, 1 + 27);
         helper.assertTrue(fuel.getItem(0).is(Items.COAL) && fuel.getItem(0).getCount() == 5, "a shift-click puts the coal in");
-        helper.assertTrue(player.getInventory().items.get(0).isEmpty(), "out of the hotbar");
+        helper.assertTrue(player.getInventory().getNonEquipmentItems().get(0).isEmpty(), "out of the hotbar");
 
         TestStation fridge = place(helper, Furniture.FRIDGE);
         Container shelves = (Container) fridge.blockEntity();
@@ -631,12 +671,12 @@ public final class FurnitureTests {
             shelves.setItem(i, new ItemStack(Items.APPLE, 64));
         }
         BlockState state = helper.getLevel().getBlockState(fridge.pos());
-        helper.assertTrue(state.getAnalogOutputSignal(helper.getLevel(), fridge.pos()) == 15, "full menu slots read full");
+        helper.assertTrue(state.getAnalogOutputSignal(helper.getLevel(), fridge.pos(), Direction.NORTH) == 15, "full menu slots read full");
         for (int i = 0; i < own; i++) {
             shelves.setItem(i, ItemStack.EMPTY);
         }
         shelves.setItem(own + 3, new ItemStack(Items.APPLE));
-        helper.assertTrue(state.getAnalogOutputSignal(helper.getLevel(), fridge.pos()) == 1, "an apple in the room reads as something");
+        helper.assertTrue(state.getAnalogOutputSignal(helper.getLevel(), fridge.pos(), Direction.NORTH) == 1, "an apple in the room reads as something");
         helper.succeed();
     }
 
@@ -652,7 +692,7 @@ public final class FurnitureTests {
         helper.assertTrue(fridge.getUpdatePacket() != null, "the fridge sends its data to clients");
         // As a client takes it: into the block entity it already has there.
         BlockEntity seen = fridge.getType().create(fridge.getBlockPos(), fridge.getBlockState());
-        seen.loadWithComponents(fridge.getUpdateTag(registries(helper)), registries(helper));
+        seen.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registries(helper), fridge.getUpdateTag(registries(helper))));
         helper.assertTrue(((StationHost) seen).stationState().getControl(Furniture.OPEN) == 1.0F, "with its door open");
         helper.assertTrue(((StationHost) seen).stationState().getPose(egg) != null && ((Container) seen).getItem(2).is(Items.EGG),
                 "and the egg where it stands");
@@ -690,13 +730,13 @@ public final class FurnitureTests {
         drawer.setItem(0, new ItemStack(Items.STICK));
         drawer.setItem(5, new ItemStack(Items.BREAD, 60));
         Player player = helper.makeMockPlayer(GameType.CREATIVE);
-        player.getInventory().items.set(7, new ItemStack(Items.BREAD, 10));
+        player.getInventory().getNonEquipmentItems().set(7, new ItemStack(Items.BREAD, 10));
         CompoundTag data = new CompoundTag();
         data.putInt(StorageLogic.SLOT, 7);
         logic.onCustomAction(station, player, StorageLogic.STORE, data);
         helper.assertTrue(drawer.getItem(5).getCount() == 64, "the bread joins the bread first");
         helper.assertTrue(drawer.getItem(1).is(Items.BREAD) && drawer.getItem(1).getCount() == 6, "the rest takes the first free slot");
-        helper.assertTrue(player.getInventory().items.get(7).isEmpty(), "and leaves the inventory");
+        helper.assertTrue(player.getInventory().getNonEquipmentItems().get(7).isEmpty(), "and leaves the inventory");
         helper.succeed();
     }
 
@@ -708,11 +748,11 @@ public final class FurnitureTests {
             drawer.setItem(i, new ItemStack(Items.STONE, i == 3 ? 62 : 64));
         }
         Player player = helper.makeMockPlayer(GameType.CREATIVE);
-        player.getInventory().items.set(0, new ItemStack(Items.STONE, 5));
+        player.getInventory().getNonEquipmentItems().set(0, new ItemStack(Items.STONE, 5));
         CompoundTag data = new CompoundTag();
         data.putInt(StorageLogic.SLOT, 0);
         logic.onCustomAction(station, player, StorageLogic.STORE, data);
-        helper.assertTrue(player.getInventory().items.get(0).getCount() == 3, "two fit, three stay in the hand's inventory");
+        helper.assertTrue(player.getInventory().getNonEquipmentItems().get(0).getCount() == 3, "two fit, three stay in the hand's inventory");
         helper.succeed();
     }
 
@@ -721,7 +761,7 @@ public final class FurnitureTests {
     }
 
     private static Block refurbished(GameTestHelper helper, Furniture furniture, String variant) {
-        ResourceLocation id = furniture.blockId(variant);
+        Identifier id = furniture.blockId(variant);
         Block block = BuiltInRegistries.BLOCK.getOptional(id).orElse(null);
         if (block == null) {
             throw new IllegalStateException("Refurbished has no " + id);
@@ -785,7 +825,7 @@ public final class FurnitureTests {
         }
 
         @Override
-        public void effect(ResourceLocation effect, String node, CompoundTag data) {
+        public void effect(Identifier effect, String node, CompoundTag data) {
         }
     }
 }

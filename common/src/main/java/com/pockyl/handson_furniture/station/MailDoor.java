@@ -10,7 +10,6 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import com.mrcrayfish.furniture.refurbished.block.MailboxBlock;
 import com.mrcrayfish.furniture.refurbished.blockentity.MailboxBlockEntity;
-import com.mrcrayfish.furniture.refurbished.mail.Mailbox;
 
 /**
  * The front of a mail box, let down by hand. Opening it is checking the mail, as opening Refurbished's menu is: the flag goes
@@ -30,10 +29,7 @@ public final class MailDoor {
         if (state.hasProperty(MailboxBlock.ENABLED) && state.getValue(MailboxBlock.ENABLED)) {
             level.setBlock(pos, state.setValue(MailboxBlock.ENABLED, false), Block.UPDATE_ALL);
         }
-        Mailbox box = mailbox.getMailbox();
-        if (box != null && !box.hasOwner()) {
-            box.setOwner(player.getUUID());
-        }
+        mailbox.getMailbox().filter(box -> !box.hasOwner()).ifPresent(box -> box.setOwner(player.getUUID()));
     }
 
     /** The front let down, or meeting its frame. */

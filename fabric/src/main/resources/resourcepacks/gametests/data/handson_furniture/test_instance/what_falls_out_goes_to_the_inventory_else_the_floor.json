@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "handson_furniture:what_falls_out_goes_to_the_inventory_else_the_floor",
+  "environment": "minecraft:default",
+  "structure": "fabric-gametest-api-v1:empty",
+  "max_ticks": 100
+}

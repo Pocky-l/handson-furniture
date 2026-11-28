@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "handson_furniture:room_past_the_menu_is_kept_and_dropped",
+  "environment": "minecraft:default",
+  "structure": "fabric-gametest-api-v1:empty",
+  "max_ticks": 100
+}

@@ -2,7 +2,7 @@ package com.pockyl.handson_furniture.station;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 
@@ -27,7 +27,7 @@ final class DoorSounds {
             MailDoor.sound(level, pos, open);
             return;
         }
-        ResourceLocation id = furniture.doorSoundId(open);
+        Identifier id = furniture.doorSoundId(open);
         if (id == null) {
             return;
         }

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "handson_furniture:a_microwave_switches_itself_off_when_done",
+  "environment": "minecraft:default",
+  "structure": "fabric-gametest-api-v1:empty",
+  "max_ticks": 700
+}

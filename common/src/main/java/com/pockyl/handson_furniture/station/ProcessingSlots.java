@@ -1,17 +1,20 @@
 package com.pockyl.handson_furniture.station;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipePropertySet;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-import com.mrcrayfish.furniture.refurbished.platform.Services;
+import com.mrcrayfish.furniture.refurbished.core.ModRecipePropertySets;
 
 import com.pockyl.diegesis.api.state.ItemPose;
 import com.pockyl.diegesis.api.state.SlotRef;
@@ -31,23 +34,26 @@ import java.util.Optional;
  */
 public enum ProcessingSlots {
     /** Refurbished's freezer: what freezes, and what came out frozen. */
-    FREEZER("freezer_solidifying", new int[] {0}, new int[] {1}),
+    FREEZER("freezer_solidifying", ModRecipePropertySets.FREEZER_INPUT, new int[] {0}, new int[] {1}),
     /** Refurbished's microwave: what heats, and what came out heated. */
-    MICROWAVE("microwave_heating", new int[] {0}, new int[] {1}),
+    MICROWAVE("microwave_heating", ModRecipePropertySets.MICROWAVE_INPUT, new int[] {0}, new int[] {1}),
     /** Refurbished's oven: three things bake at once, each into the slot three further on. */
-    OVEN("oven_baking", new int[] {0, 1, 2}, new int[] {3, 4, 5}),
+    OVEN("oven_baking", ModRecipePropertySets.OVEN_INPUT, new int[] {0, 1, 2}, new int[] {3, 4, 5}),
     /** Refurbished's generator: the fuel that burns; what it leaves (a lava bucket's bucket) is moved off like a thing that does not burn. */
-    GENERATOR(null, new int[] {0}, new int[0]);
+    GENERATOR(null, null, new int[] {0}, new int[0]);
 
     /** The recipes it processes by, or null for the generator, which burns whatever burns in a furnace. */
-    private final ResourceLocation recipeType;
+    private final Identifier recipeType;
+    /** What its recipes take, which clients know too (they have no recipes since 1.21.2). */
+    private final ResourceKey<RecipePropertySet> takes;
     private final int[] inputs;
     private final int[] outputs;
     /** The first slot past the furniture's own: the room where things wait. */
     private final int room;
 
-    ProcessingSlots(String recipeType, int[] inputs, int[] outputs) {
-        this.recipeType = recipeType == null ? null : ResourceLocation.fromNamespaceAndPath(Furniture.REFURBISHED, recipeType);
+    ProcessingSlots(String recipeType, ResourceKey<RecipePropertySet> takes, int[] inputs, int[] outputs) {
+        this.recipeType = recipeType == null ? null : Identifier.fromNamespaceAndPath(Furniture.REFURBISHED, recipeType);
+        this.takes = takes;
         this.inputs = inputs;
         this.outputs = outputs;
         int[] own = outputs.length > 0 ? outputs : inputs;
@@ -171,10 +177,16 @@ public enum ProcessingSlots {
 
     /** Whether the furniture does something with {@code stack}: it has a recipe for it, or (the generator) it burns. */
     public boolean processes(Level level, ItemStack stack) {
-        if (recipeType == null) {
-            return !stack.isEmpty() && Services.ITEM.getBurnTime(stack, null) > 0;
+        if (stack.isEmpty()) {
+            return false;
         }
-        return !resultOf(level, stack).isEmpty();
+        if (recipeType == null) {
+            return level.fuelValues().isFuel(stack);
+        }
+        if (level instanceof ServerLevel server) {
+            return !resultOf(server, stack).isEmpty();
+        }
+        return level.recipeAccess().propertySet(takes).test(stack);
     }
 
     /** What processing {@code input} gives, or empty (always for the generator, whose fuel gives power). */
@@ -185,11 +197,12 @@ public enum ProcessingSlots {
         }
         RecipeType<Recipe<SingleRecipeInput>> type = (RecipeType<Recipe<SingleRecipeInput>>) BuiltInRegistries.RECIPE_TYPE
                 .getOptional(recipeType).orElse(null);
-        if (type == null || input.isEmpty()) {
+        if (type == null || input.isEmpty() || !(level instanceof ServerLevel server)) {
             return ItemStack.EMPTY;
         }
-        return level.getRecipeManager().getRecipeFor(type, new SingleRecipeInput(input), level)
-                .map(holder -> holder.value().getResultItem(level.registryAccess())).orElse(ItemStack.EMPTY);
+        SingleRecipeInput recipeInput = new SingleRecipeInput(input);
+        return server.recipeAccess().getRecipeFor(type, recipeInput, server)
+                .map(holder -> holder.value().assemble(recipeInput, server.registryAccess())).orElse(ItemStack.EMPTY);
     }
 
     /** Whether {@code result} can be added to {@code output}, as Refurbished adds it. */

@@ -1,7 +1,7 @@
 package com.pockyl.handson_furniture;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -111,8 +111,8 @@ public enum Furniture {
     }
 
     /** The id of Refurbished's block of a variant. */
-    public ResourceLocation blockId(String variant) {
-        return ResourceLocation.fromNamespaceAndPath(REFURBISHED, variant + "_" + suffix);
+    public Identifier blockId(String variant) {
+        return Identifier.fromNamespaceAndPath(REFURBISHED, variant + "_" + suffix);
     }
 
     public StationType type() {
@@ -121,7 +121,7 @@ public enum Furniture {
 
     /** The variant of a block of this furniture (its wood, colour or finish), or empty when the block is not one. */
     public Optional<String> variantOf(Block block) {
-        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(block);
+        Identifier id = BuiltInRegistries.BLOCK.getKey(block);
         String tail = "_" + suffix;
         if (!REFURBISHED.equals(id.getNamespace()) || !id.getPath().endsWith(tail)) {
             return Optional.empty();
@@ -151,7 +151,7 @@ public enum Furniture {
                 .openWhen((player, pos, state) -> StationType.OpenCondition.DEFAULT.test(player, pos, state) && !holdsWrench(player))
                 .logic(StorageLogic::new);
         for (String variant : variants) {
-            ResourceLocation id = blockId(variant);
+            Identifier id = blockId(variant);
             // Looked up once every block is registered; a block this Refurbished does not have is left as air, which is never used.
             builder.block(() -> BuiltInRegistries.BLOCK.getOptional(id).orElse(Blocks.AIR));
         }
@@ -202,9 +202,9 @@ public enum Furniture {
     }
 
     /** The id of Refurbished's open or close sound of its door, lid or drawer ({@link #doorSound}), or null when it has none. */
-    public ResourceLocation doorSoundId(boolean open) {
+    public Identifier doorSoundId(boolean open) {
         String sound = doorSound();
-        return sound == null ? null : ResourceLocation.fromNamespaceAndPath(REFURBISHED, "block." + sound + (open ? ".open" : ".close"));
+        return sound == null ? null : Identifier.fromNamespaceAndPath(REFURBISHED, "block." + sound + (open ? ".open" : ".close"));
     }
 
     /**

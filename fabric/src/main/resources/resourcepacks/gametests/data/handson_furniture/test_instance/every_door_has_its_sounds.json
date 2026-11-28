@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "handson_furniture:every_door_has_its_sounds",
+  "environment": "minecraft:default",
+  "structure": "fabric-gametest-api-v1:empty",
+  "max_ticks": 100
+}

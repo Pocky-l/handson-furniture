@@ -1,7 +1,7 @@
 package com.pockyl.handson_furniture;
 
 import com.mojang.logging.LogUtils;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 
 /** Constants and setup of the mod, the same on the client and the server. */
@@ -12,8 +12,8 @@ public final class HandsOnFurniture {
     private HandsOnFurniture() {
     }
 
-    public static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+    public static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath(MOD_ID, path);
     }
 
     /** Registers the stations; called during mod setup on both sides. */

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "handson_furniture:a_shift_click_merges_then_fills",
+  "environment": "minecraft:default",
+  "structure": "fabric-gametest-api-v1:empty",
+  "max_ticks": 100
+}

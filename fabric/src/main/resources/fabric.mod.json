@@ -14,9 +14,8 @@
   "icon": "logo.png",
   "environment": "*",
   "entrypoints": {
-    "main": ["com.pockyl.handson_furniture.fabric.HandsOnFurnitureFabric"],
-    "client": ["com.pockyl.handson_furniture.fabric.HandsOnFurnitureFabricClient"],
-    "fabric-gametest": ["com.pockyl.handson_furniture.fabric.FabricFurnitureTests"]
+    "main": ["com.pockyl.handson_furniture.fabric.HandsOnFurnitureFabric", "com.pockyl.handson_furniture.fabric.FabricFurnitureTests"],
+    "client": ["com.pockyl.handson_furniture.fabric.HandsOnFurnitureFabricClient"]
   },
   "mixins": ["handson_furniture.mixins.json"],
   "depends": {

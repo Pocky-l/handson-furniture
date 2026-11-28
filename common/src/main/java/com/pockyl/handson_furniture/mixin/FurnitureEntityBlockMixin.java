@@ -2,6 +2,7 @@ package com.pockyl.handson_furniture.mixin;
 
 import com.mrcrayfish.furniture.refurbished.block.FurnitureEntityBlock;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -22,7 +23,7 @@ import com.pockyl.handson_furniture.station.RoomyContainer;
 @Mixin(FurnitureEntityBlock.class)
 abstract class FurnitureEntityBlockMixin {
     @Inject(method = "getAnalogOutputSignal", at = @At("HEAD"), cancellable = true)
-    private void handson$signal(BlockState state, Level level, BlockPos pos, CallbackInfoReturnable<Integer> info) {
+    private void handson$signal(BlockState state, Level level, BlockPos pos, Direction direction, CallbackInfoReturnable<Integer> info) {
         if (!(level.getBlockEntity(pos) instanceof RoomyContainer roomy) || !(roomy instanceof Container container)) {
             return;
         }

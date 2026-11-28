@@ -175,7 +175,7 @@ public final class StorageLogic implements StationLogic {
     @Override
     public void onCustomAction(StationContext station, Player player, String action, CompoundTag data) {
         if (DOOR.equals(action)) {
-            String control = data.contains(CONTROL) ? data.getString(CONTROL) : Furniture.OPEN;
+            String control = data.getStringOr(CONTROL, Furniture.OPEN);
             if (!Furniture.POWER.equals(control) && station.state().schema().controls().containsKey(control)) {
                 toggleDoor(station, player, control);
             }
@@ -184,18 +184,18 @@ public final class StorageLogic implements StationLogic {
         if (!STORE.equals(action) || !data.contains(SLOT)) {
             return;
         }
-        int from = data.getInt(SLOT);
+        int from = data.getIntOr(SLOT, -1);
         Inventory inventory = player.getInventory();
-        if (from < 0 || from >= inventory.items.size()) {
+        if (from < 0 || from >= inventory.getNonEquipmentItems().size()) {
             return;
         }
-        ItemStack stack = inventory.items.get(from);
+        ItemStack stack = inventory.getNonEquipmentItems().get(from);
         if (stack.isEmpty()) {
             return;
         }
         ItemStack left = store(station, stack.copy());
         if (left.getCount() != stack.getCount()) {
-            inventory.items.set(from, left);
+            inventory.getNonEquipmentItems().set(from, left);
             inventory.setChanged();
         }
     }

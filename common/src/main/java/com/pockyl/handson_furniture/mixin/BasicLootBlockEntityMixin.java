@@ -14,6 +14,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -133,20 +135,25 @@ abstract class BasicLootBlockEntityMixin extends BlockEntity implements StationH
         }
     }
 
+    /**
+     * The places go in as one compound. A value output carries no registries: those of the level, else of the last load (a
+     * block entity without a level that never loaded has no places yet).
+     */
     @Inject(method = "saveAdditional", at = @At("TAIL"))
-    private void handson$save(CompoundTag tag, HolderLookup.Provider registries, CallbackInfo info) {
-        CompoundTag saved = handson$station != null ? handson$station.save(registries) : handson$read;
+    private void handson$save(ValueOutput output, CallbackInfo info) {
+        HolderLookup.Provider registries = level != null ? level.registryAccess() : handson$registries;
+        CompoundTag saved = handson$station != null && registries != null ? handson$station.save(registries) : handson$read;
         if (saved != null && !saved.isEmpty()) {
-            tag.put(handson$KEY, saved);
+            output.store(handson$KEY, CompoundTag.CODEC, saved);
         }
     }
 
     @Inject(method = "loadAdditional", at = @At("TAIL"))
-    private void handson$load(CompoundTag tag, HolderLookup.Provider registries, CallbackInfo info) {
-        handson$read = tag.contains(handson$KEY) ? tag.getCompound(handson$KEY) : null;
-        handson$registries = registries;
+    private void handson$load(ValueInput input, CallbackInfo info) {
+        handson$read = input.read(handson$KEY, CompoundTag.CODEC).orElse(null);
+        handson$registries = input.lookup();
         if (handson$station != null) {
-            handson$station.load(handson$read != null ? handson$read : new CompoundTag(), registries);
+            handson$station.load(handson$read != null ? handson$read : new CompoundTag(), handson$registries);
             handson$station.pollStorages();
         }
     }

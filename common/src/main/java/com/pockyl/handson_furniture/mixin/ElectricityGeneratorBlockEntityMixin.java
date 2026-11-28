@@ -1,7 +1,6 @@
 package com.pockyl.handson_furniture.mixin;
 
 import com.mrcrayfish.furniture.refurbished.blockentity.ElectricityGeneratorBlockEntity;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,7 +29,7 @@ abstract class ElectricityGeneratorBlockEntityMixin {
     private int handson$count;
     /** What the fuel in the slot leaves once burnt, or null. */
     @Unique
-    private Item handson$leaves;
+    private ItemStack handson$leaves = ItemStack.EMPTY;
 
     @Inject(method = "earlyNodeTick", at = @At("HEAD"), remap = false)
     private void handson$arrange(Level level, CallbackInfo info) {
@@ -42,7 +41,7 @@ abstract class ElectricityGeneratorBlockEntityMixin {
         ItemStack fuel = generator.getItem(0);
         handson$item = System.identityHashCode(fuel.getItem());
         handson$count = fuel.getCount();
-        handson$leaves = fuel.isEmpty() ? null : fuel.getItem().getCraftingRemainingItem();
+        handson$leaves = fuel.isEmpty() ? ItemStack.EMPTY : fuel.getItem().getCraftingRemainder();
     }
 
     @Inject(method = "earlyNodeTick", at = @At("TAIL"), remap = false)
@@ -52,9 +51,9 @@ abstract class ElectricityGeneratorBlockEntityMixin {
         }
         ElectricityGeneratorBlockEntity generator = (ElectricityGeneratorBlockEntity) (Object) this;
         ItemStack fuel = generator.getItem(0);
-        if (fuel.isEmpty() && handson$count == 1 && handson$leaves != null) {
+        if (fuel.isEmpty() && handson$count == 1 && !handson$leaves.isEmpty()) {
             // In the burnt fuel's slot, so it keeps its place; it is moved off the burning slot on the next tick.
-            generator.setItem(0, new ItemStack(handson$leaves));
+            generator.setItem(0, handson$leaves.copy());
             fuel = generator.getItem(0);
         }
         if (System.identityHashCode(fuel.getItem()) != handson$item || fuel.getCount() != handson$count) {

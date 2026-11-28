@@ -2,7 +2,7 @@ package com.pockyl.handson_furniture.client;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -157,7 +157,7 @@ final class FurnitureBehavior implements StationBehavior {
     private static final float BAR_OFF = -0.03F;
     /** One texel of lime concrete, stretched along the bar: an even green. */
     @SuppressWarnings("removal")
-    private static final ResourceLocation BAR = ResourceLocation.withDefaultNamespace("block/lime_concrete");
+    private static final Identifier BAR = Identifier.withDefaultNamespace("block/lime_concrete");
 
     /**
      * The light inside: the fridge's strip down its side wall, the microwave's cover in its cavity wall, the oven's on its side
@@ -665,7 +665,7 @@ final class FurnitureBehavior implements StationBehavior {
      * the world lights the block so that the two look the same as they swap.
      */
     private Visual model(String name, NodeView node) {
-        ResourceLocation id = HandsOnFurniture.id("diegesis/" + furniture.stationName() + "/" + name);
+        Identifier id = HandsOnFurniture.id("diegesis/" + furniture.stationName() + "/" + name);
         Vector3fc anchor = node.definition().visual().map(Visual::anchor).orElse(Visual.DEFAULT_ANCHOR);
         return new Visual(Optional.of(id), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), anchor,
                 Visual.WHITE, false, false, false, 0.0F, true);
